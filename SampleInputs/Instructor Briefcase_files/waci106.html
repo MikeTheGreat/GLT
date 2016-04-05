@@ -1,0 +1,43 @@
+
+<!-- saved from url=(0050)https://www.ctc.edu/~cascadia/wts/ibc/waci106.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script>
+    function timeOutMsg(form) {
+
+    msg="\nAccess to your briefcase will expire in\n" +
+    "two minutes. Would you like more time?\n"
+    if(confirm(msg)){
+    form.tkt.value=top.ticket;
+    form.submit();
+    }
+    }
+    </script>
+  </head>
+  <body bgcolor="#23238E" onunload="clearTimeout(top.tid)" marginwidth="0" marginheight="0">
+    <map name="mymap1">
+      <area shape="rect" coords="0,0,35,35" href="https://www.ctc.edu/~cascadia/wts/ibc/waci107.html">
+    </map>
+    <img usemap="#mymap1" src="timer.gif" border="0">
+
+    <form method="post" action="https://www.ctc.edu/cgi-bin/rq300">
+      <input type="hidden" name="request" value="ipatimer" size="8" maxlength="8">
+      <input type="hidden" name="tkt" value="" size="16" maxlength="16">
+    </form>
+
+    <script>
+    if(top.refresh == 1) {
+    top.refresh = 0;
+    alloc = top.timeout / 60000;
+    msg = "The amount of time you have to access your briefcase has been reset to " + alloc + " minutes.";
+    iko = setTimeout("window.status=msg",1000);
+    }
+
+    // set warning to display 2 minutes (measured in milliseconds)
+    // before actual timeout
+    tm = top.timeout - 120000;
+    tid = setTimeout('timeOutMsg(document.forms[0])',tm);
+
+    </script>
+  
+
+</body><div></div></html>

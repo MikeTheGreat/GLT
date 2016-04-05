@@ -1,0 +1,6 @@
+# This is a comment line
+Mike, Von P, michpa@hotmail.com #comment from here
+McTest, Testy, 
+McTest2, Testo
+Bob, Dobbs, example@a.com
+# Error, #Missing fields, email here

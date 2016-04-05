@@ -1,0 +1,185 @@
+
+<!-- saved from url=(0050)https://www.ctc.edu/~cascadia/wts/ibc/waci110.html -->
+<html><!--
+ * Application: Instructor's Brief Case
+ * File Name:   waci110.html
+ * Function:    Class Roster
+ * ver 3.0 6/6/01
+ *6/6/01 Left justify student's email in 3rd table column
+ --><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title> Class Roster - waci110 ver 3.0 - 06/06/01 </title>
+</head>
+  <body bgcolor="#99CCCC">
+  <table cellspacing="0" cellpadding="3" border="1" align="Center">
+    <caption>Class Roster</caption>
+    <script>
+      var oddLine=1;
+      var YES="Y ";
+      document.write("<TR>");
+      document.write("<TH><FONT SIZE=-2>QUARTER</TH>");
+      document.write("<TH><FONT SIZE=-2>ITEM </TH>");
+      document.write("<TH><FONT SIZE=-2>COURSE</TH>");
+      document.write("<TH><FONT SIZE=-2>SECTION</TH>");
+      document.write("<TH><FONT SIZE=-2>TITLE</TH>");
+      document.write("<TH><FONT SIZE=-2>INSTRUCTOR</TH>");
+      document.write("</TR>");
+      document.write("<TR>");
+      document.write("<TD><FONT SIZE=-1><B>"+parent.term+"</B></TD>");
+      document.write("<TD><FONT SIZE=-1><B>"+parent.itm+"</B></TD>");
+      document.write("<TD><FONT SIZE=-1><B>"+parent.course+"</B></TD>");
+      document.write("<TD Align='Center'><FONT SIZE=-1><B>"+parent.sect+"</B></TD>");
+      document.write("<TD><FONT SIZE=-1><B>"+parent.title+"</B></TD>");
+      document.write("<TD><FONT SIZE=-1><B>"+top.instrName+"</B></TD>");
+      document.write("</TR>");
+      document.write("</TABLE><BR>");
+      document.write("<TABLE BORDER=1 Align='center' Cellpadding=3 Cellspacing =0>");
+      document.write("<TR>");
+      document.write("<TH><FONT SIZE=-2>BUILDING<BR>ROOM</TH>");
+      document.write("<TH><FONT SIZE=-2>CREDIT</TH>");
+      if ( parent.clockHrCol==1 ) {
+        document.write("<TH><FONT SIZE=-2>CLOCK<BR>HOURS</TH>");
+        document.write("<TH><FONT SIZE=-2>HOUR<BR>DAY</TH>");
+      }
+      document.write("<TH><FONT SIZE=-2>START<BR>TIME</TH>");
+      document.write("<TH><FONT SIZE=-2>END<BR>TIME</TH>");
+      document.write("<TH><FONT SIZE=-2>DAYS</TH>");
+      document.write("<TH><FONT SIZE=-2>START<BR></TH>");
+      document.write("<TH><FONT SIZE=-2>TENTH<BR>DAY</TH>");
+      document.write("<TH><FONT SIZE=-2>COUNT<BR>METH</TH>");
+      document.write("<TH><FONT Size=-2>SECT<BR>STAT</TH>");
+      document.write("</TR>");
+      document.write("<TR Align='center'>");
+      document.write("<TD><FONT SIZE=-1>"+parent.room+"</TD>");
+      document.write("<TD Align='Center'><FONT SIZE=-1>"+parent.credit+"</TD>");
+
+      if ( parent.clockHrCol==1 ) {
+        document.write("<TD Align='Center'><FONT SIZE=-1>"+parent.hours+"</TD>");
+        document.write("<TD Align='Center'><FONT SIZE=-1>"+parent.hoursDay+"</TD>");
+      }
+
+      document.write("<TD><FONT SIZE=-1>"+parent.strtTime+"</TD>");
+      document.write("<TD><FONT SIZE=-1>"+parent.endTime+"</TD>");
+      document.write("<TD><FONT SIZE=-1>"+parent.days+"</TD>")
+      document.write("<TD><FONT SIZE=-1>"+parent.strtDate+"</TD>");
+      document.write("<TD><FONT SIZE=-1>"+parent.tenDay+"</TD>");
+      document.write("<TD><FONT SIZE=-1>"+parent.cntMeth+"</TD>");
+      document.write("<TD><FONT SIZE=-1>"+parent.sectStat+"</TD>");
+      document.write("</TR>");
+      document.write("</TABLE>");
+      document.write("<BR>");
+      document.write("<TABLE BORDER=1 Align='center' Cellpadding=4 Cellspacing=2>");
+      document.write("<TR>");
+      document.write("<TH>&nbsp</TH>");
+      document.write("<TH><FONT SIZE=-2>SID</TH>");
+      document.write("<TH><FONT SIZE=-2>STUDENT`S NAME</TH>");
+      document.write("<TH><FONT SIZE=-2>GRADE</TH>");
+
+      if ( parent.clockHrCol==1 ){
+        document.write("<TH><FONT SIZE=-2>HOURS</TH>");
+      } else {
+         if ( parent.varCr == YES ) {
+               document.write("<TH><FONT SIZE=-2>CREDIT</TH>");
+         }
+      }
+
+      if (parent.optHead1 != " " ){
+        document.write("<TH><FONT SIZE=-2>"+parent.optHead1+"</TH>");
+      }
+      if (parent.optHead2 != " " ){
+        document.write("<TH><FONT SIZE=-2>"+parent.optHead2+"</TH>");
+      }
+      if (parent.optHead3 != " " ){
+        document.write("<TH><FONT SIZE=-2>"+parent.optHead3+"</TH>");
+      }
+      document.write("</TR>");
+
+      for ( x=0; x<parent.stuInfo.length; x++ ) {
+        if (oddLine) {
+          document.write("<TR bgcolor='#CCFFDD'>");
+        }else{
+          document.write("<TR>");
+        }
+        oddLine=!oddLine
+        var y=x+1;
+        document.write("<TD><FONT SIZE=-1>"+y+"</TD>");
+        document.write("<TD>"+parent.stuInfo[x].sid+"</TD>");
+        document.write("<TD>"+parent.stuInfo[x].name+"</TD>");
+        document.write("<TD Align=Center>"+parent.stuInfo[x].grade+"</TD>");
+
+        if ( parent.varCr== YES || parent.clockHrCol==1) {
+          document.write("<TD Align=center>"+parent.stuInfo[x].enrCredit+"</TD>");
+        }
+         if ( parent.optHead1 != " " ){
+          document.write("<TD Align=Center>"+parent.stuInfo[x].opt1+"</TD>");
+         }
+        if ( parent.optHead2 != " " ){
+          document.write("<TD Align=Center>"+parent.stuInfo[x].opt2+"</TD>");
+        }
+        if ( parent.optHead3 != " " ){
+			if ( parent.stuInfo[x].opt3 == " " || parent.stuInfo[x].opt3 == "")
+				{
+				document.write("<TD>&nbsp;</TD>");
+				}
+			else{
+/* 6/6/01 modifcation to left justify email address in the table column */
+				if ( parent.optHead3.indexOf("EMAIL") == 0){
+     	     		document.write("<TD Align=left>"+parent.stuInfo[x].opt3+"</TD>");
+					}
+				else{
+				    document.write("<TD Align=Center>"+parent.stuInfo[x].opt3+"</TD>");
+   		    		}
+				}
+/* 6/6/01 end of modification */
+
+		}
+        document.write("</TR>");
+      }
+      document.write("</TABLE>");
+      document.write("<BR>");
+      document.write("<TABLE BORDER=1 Cellpadding=3 Align='center'>");
+      document.write("<TR>");
+      document.write("<TH><FONT SIZE=-1>Total students</TH>");
+      document.write("<TD Align='right'>"+parent.totStu+"</TD>");
+      document.write("<TH><FONT SIZE=-1>Total students excluding withdrawals</TH>");
+      document.write("<TD align='right'>"+parent.totXw+"</TD>");
+      document.write("</TR>");
+      document.write("</TABLE><BR>");
+
+      if (parent.wlenablesw==1 && parent.classwl.length > 0) {
+         document.write("<TABLE>");
+         document.write("<TABLE BORDER=1 Align='center' Cellpadding=4 Cellspacing=2>");
+         document.write("<CAPTION>Class Waitlist</CAPTION>");
+         document.write("<TR>");
+         document.write("<TH>&nbsp</TH>");
+         document.write("<TH><FONT SIZE=-2>SID</TH>");
+         document.write("<TH><FONT SIZE=-2>STUDENT'S NAME</TH>");
+         document.write("<TH><FONT SIZE=-2>STATUS</TH>");
+         document.write("<TH><FONT SIZE=-2>WAITLIST DATE/TIME</TH>");
+         document.write("</TR>");
+         for ( x=0; x<parent.classwl.length; x++ ) {
+            if (oddLine) {
+               document.write("<TR bgcolor='#CCFFDD'>");
+            }else{
+               document.write("<TR>");
+            }
+            oddLine=!oddLine
+            var y=x+1;
+            document.write("<TD><FONT SIZE=-2>"+y+"</TD>");
+            document.write("<TD>"+parent.classwl[x].sid+"</TD>");
+            document.write("<TD>"+parent.classwl[x].name+"</TD>");
+            document.write("<TD>"+parent.classwl[x].status+"</TD>");
+            document.write("<TD>"+parent.classwl[x].datetime+"</TD>");
+            document.write("</TR>");
+         }
+         document.write("</TABLE>");
+         document.write("<BR>");
+         document.write("<TABLE BORDER=1 Cellpadding=3 Align='center'>");
+         document.write("<TR>");
+         document.write("<TH><FONT SIZE=-1>Total students waitlisted</TH>");
+         document.write("<TD Align='right'>"+parent.totStuWl+"</TD>");
+         document.write("</TR>");
+         document.write("</TABLE>");
+       }
+  </script><tbody><tr><th><font size="-2">QUARTER</font></th><th><font size="-2">ITEM </font></th><th><font size="-2">COURSE</font></th><th><font size="-2">SECTION</font></th><th><font size="-2">TITLE</font></th><th><font size="-2">INSTRUCTOR</font></th></tr><tr><td><font size="-1"><b>Spring 2016 </b></font></td><td><font size="-1"><b>1400</b></font></td><td><font size="-1"><b>BIT  142  </b></font></td><td align="Center"><font size="-1"><b>H1</b></font></td><td><font size="-1"><b>INTERMEDIATE PROGRAMMING</b></font></td><td><font size="-1"><b>MICHAEL PANITZ                                               </b></font></td></tr></tbody></table><br><table border="1" align="center" cellpadding="3" cellspacing="0"><tbody><tr><th><font size="-2">BUILDING<br>ROOM</font></th><th><font size="-2">CREDIT</font></th><th><font size="-2">START<br>TIME</font></th><th><font size="-2">END<br>TIME</font></th><th><font size="-2">DAYS</font></th><th><font size="-2">START<br></font></th><th><font size="-2">TENTH<br>DAY</font></th><th><font size="-2">COUNT<br>METH</font></th><th><font size="-2">SECT<br>STAT</font></th></tr><tr align="center"><td><font size="-1">CC1 0210  </font></td><td align="Center"><font size="-1"> 5.0</font></td><td><font size="-1">01:15pm</font></td><td><font size="-1">03:20pm</font></td><td><font size="-1">W</font></td><td><font size="-1">03/28/16</font></td><td><font size="-1">04/08/16</font></td><td><font size="-1">&nbsp;</font></td><td><font size="-1">&nbsp;     </font></td></tr></tbody></table><br><table border="1" align="center" cellpadding="4" cellspacing="2"><tbody><tr><th>&nbsp;</th><th><font size="-2">SID</font></th><th><font size="-2">STUDENT`S NAME</font></th><th><font size="-2">GRADE</font></th><th><font size="-2">DAY PHONE       </font></th><th><font size="-2">EVENING PHONE   </font></th><th><font size="-2">EMAIL           </font></th></tr><tr bgcolor="#CCFFDD"><td><font size="-1">1</font></td><td>955-28-3047</td><td>AL AMEEDI AMAN A</td><td align="Center">&nbsp;</td><td align="Center">425 971-1171</td><td align="Center">&nbsp;</td><td align="left">aman.alameedi@yahoo.com</td></tr><tr><td><font size="-1">2</font></td><td>960-06-7309</td><td>BENG SOPHEAVONG</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="left">SCVONG12@GMAIL.COM</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">3</font></td><td>950-60-8738</td><td>BRADLEY PATRICK N</td><td align="Center">&nbsp;</td><td align="Center">801 557-6915</td><td align="Center">801 557-6915</td><td align="left">pootbink@yahoo.com</td></tr><tr><td><font size="-1">4</font></td><td>960-06-8242</td><td>COBURN MAXIMILLIAN D</td><td align="Center">&nbsp;</td><td align="Center">206 371-2447</td><td align="Center">&nbsp;</td><td align="left">Maximilliancoburn@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">5</font></td><td>960-06-8430</td><td>DILIANI RYAN E</td><td align="Center">&nbsp;</td><td align="Center">425 208-2716</td><td align="Center">425 208-2716</td><td align="left">Diliarya000@yahoo.com</td></tr><tr><td><font size="-1">6</font></td><td>960-06-5015</td><td>GENG WENBO</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="left">WENBOGENG@YEAH.NET</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">7</font></td><td>960-03-1500</td><td>GOERDEL JEFFERY M</td><td align="Center">&nbsp;</td><td align="Center">425 681-9765</td><td align="Center">&nbsp;</td><td align="left">jefferygoerdel@hotmail.com</td></tr><tr><td><font size="-1">8</font></td><td>960-01-9663</td><td>GRAHAM TYLER M</td><td align="Center">&nbsp;</td><td align="Center">425 231-8769</td><td align="Center">360 568-1663</td><td align="left">tyler.graham@frontier.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">9</font></td><td>960-06-8182</td><td>GUO JIYANG</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="Center">&nbsp;</td><td align="left">JY981006@163.COM</td></tr><tr><td><font size="-1">10</font></td><td>960-06-2672</td><td>HARLICH MICHAEL R</td><td align="Center">&nbsp;</td><td align="Center">425 760-2340</td><td align="Center">&nbsp;</td><td align="left">RYANHARLICH@HOTMAIL.COM</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">11</font></td><td>960-06-8327</td><td>HODGSON MADELEINE R</td><td align="Center">&nbsp;</td><td align="Center">425 495-4003</td><td align="Center">&nbsp;</td><td align="left">madeleinerhodgson@gmail.com</td></tr><tr><td><font size="-1">12</font></td><td>950-64-7762</td><td>HUI XUAN</td><td align="Center">&nbsp;</td><td align="Center">541 224-3100</td><td align="Center">&nbsp;</td><td align="left">lovelyhuixuan@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">13</font></td><td>960-06-8840</td><td>KAMPS CONOR A</td><td align="Center">&nbsp;</td><td align="Center">360 860-2016</td><td align="Center">&nbsp;</td><td align="left">c_kamps@yahoo.com</td></tr><tr><td><font size="-1">14</font></td><td>960-06-9017</td><td>KUKKE RASHI</td><td align="Center">&nbsp;</td><td align="Center">425 979-9049</td><td align="Center">&nbsp;</td><td align="left">rashikukke@hotmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">15</font></td><td>963-01-8983</td><td>LI XINYAO</td><td align="Center">&nbsp;</td><td align="Center">425 949-2412</td><td align="Center">&nbsp;</td><td align="left">li651854292@gmail.com</td></tr><tr><td><font size="-1">16</font></td><td>960-06-5819</td><td>MUNKHTUR TSEVEENDORJ</td><td align="Center">&nbsp;</td><td align="Center">425 268-2183</td><td align="Center">&nbsp;</td><td align="left">tseveenee_m@yahoo.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">17</font></td><td>960-05-7776</td><td>PADILLA GARRETT J</td><td align="Center">&nbsp;</td><td align="Center">425 346-9080</td><td align="Center">&nbsp;</td><td align="left">GarrettPadilla@live.com</td></tr><tr><td><font size="-1">18</font></td><td>960-06-5444</td><td>RAMOS-CCOPA PRISZILA</td><td align="Center">&nbsp;</td><td align="Center">425 260-5991</td><td align="Center">&nbsp;</td><td align="left">lamusa203@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">19</font></td><td>925-02-7996</td><td>ROLSTAD NEIL S</td><td align="Center">&nbsp;</td><td align="Center">425 241-9263</td><td align="Center">425 241-9263</td><td align="left">neil.rolstad@gmail.com</td></tr><tr><td><font size="-1">20</font></td><td>960-07-0137</td><td>SHAH TIRTHANK R</td><td align="Center">&nbsp;</td><td align="Center">425 778-2506</td><td align="Center">&nbsp;</td><td align="left">switushah18@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">21</font></td><td>960-06-8441</td><td>SINGH KAMALPREET</td><td align="Center">&nbsp;</td><td align="Center">425 299-3170</td><td align="Center">&nbsp;</td><td align="left">Kamalrathour994@gmail.com</td></tr><tr><td><font size="-1">22</font></td><td>960-06-8009</td><td>STERLING PHILIP B</td><td align="Center">&nbsp;</td><td align="Center">915 929-4995</td><td align="Center">915 929-4995</td><td align="left">philipssterlings@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">23</font></td><td>960-06-5266</td><td>TELLEZ MARISOL</td><td align="Center">&nbsp;</td><td align="Center">206 375-7929</td><td align="Center">206 375-7929</td><td align="left">marysoltellez7@gmail.com</td></tr><tr><td><font size="-1">24</font></td><td>960-06-4892</td><td>VO CUONG C</td><td align="Center">&nbsp;</td><td align="Center">425 772-8929</td><td align="Center">&nbsp;</td><td align="left">nhicuong2306@gmail.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">25</font></td><td>950-59-8632</td><td>VO KEVIN T</td><td align="Center">&nbsp;</td><td align="Center">206 619-6481</td><td align="Center">&nbsp;</td><td align="left">vo.kevin23@hotmail.com</td></tr><tr><td><font size="-1">26</font></td><td>960-05-4483</td><td>WU JIAJIE</td><td align="Center">&nbsp;</td><td align="Center">206 375-0737</td><td align="Center">206 375-0737</td><td align="left">jie2139@live.com</td></tr><tr bgcolor="#CCFFDD"><td><font size="-1">27</font></td><td>980-48-1737</td><td>YANG MENG</td><td align="Center">&nbsp;</td><td align="Center">206 218-4782</td><td align="Center">&nbsp;</td><td align="left">yangmengseattle@gmail.com</td></tr></tbody></table><br><table border="1" cellpadding="3" align="center"><tbody><tr><th><font size="-1">Total students</font></th><td align="right">0027</td><th><font size="-1">Total students excluding withdrawals</font></th><td align="right">0027</td></tr></tbody></table><br>
+
+</body><div></div></html>

@@ -1,0 +1,34 @@
+
+<!-- saved from url=(0050)https://www.ctc.edu/~cascadia/wts/ibc/waci102.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Button Bar</title>
+</head><body bgcolor="#999999" marginwidth="0" marginheight="0">
+  <form name="buttonbar">
+    <center>
+    <script>
+    window.onerror=top.windowError;
+
+    function promptSure() {
+    if(top.yousure > 0) {
+    msg = "\nIf you continue, you will lose any changes\n" +
+    "you have made.  Do you wish to continue?"
+    if(!confirm(msg)){
+    return false;
+    }
+    }
+    top.yousure=0;
+    top.refresh=1;
+    return true;
+    }
+
+    //state 1 is contents showing, state 2 is no frame
+    if (top.state == 1) {
+    document.write('<input type="button" name="hc" value="Hide Briefcase Contents" onClick="top.state=2; top.frames[0].location.href=top.frames[0].frames[2].location.href; history.go(0)">');
+    }
+    else if (top.state == 2) {
+    document.write('<input type="button" name="sc" value="Show Briefcase Contents" onClick="if(promptSure()){top.state=1; top.frames[0].location.href=\'https://www.ctc.edu/~cascadia/wts/ibc/waci101.html\'; history.go(0)}">');
+    }
+
+    </script><input type="button" name="sc" value="Show Briefcase Contents" onclick="if(promptSure()){top.state=1; top.frames[0].location.href=&#39;https://www.ctc.edu/~cascadia/wts/ibc/waci101.html&#39;; history.go(0)}">
+  
+
+</center></form></body><div></div></html>
