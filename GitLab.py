@@ -1,5 +1,3 @@
-﻿# Small change to commit
-#
 # NEXT STEPS:
 # Create students for a class / delete students from a class
 #       (Delete students' projects, as well)
