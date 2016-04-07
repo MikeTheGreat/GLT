@@ -1,7 +1,7 @@
 
-= Installation Instructions =
+# Installation Instructions #
 
-== VirtualBox ==
+## VirtualBox ##
 
 Get [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
