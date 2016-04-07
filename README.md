@@ -1,6 +1,10 @@
-# README #
+# GitLabTool (GLT) #
+## How To Install ##
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Runs on Ubuntu 14.04
+[GitLab download instructions[(https://about.gitlab.com/downloads/#ubuntu1404)
+
+I put the Ubuntu-14.04.mini.io in the INSTALL dir
 
 ### What is this repository for? ###
 
