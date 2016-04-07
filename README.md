@@ -1,10 +1,7 @@
 # GitLabTool (GLT) #
 ## How To Install ##
 
-Runs on Ubuntu 14.04
-[GitLab download instructions[(https://about.gitlab.com/downloads/#ubuntu1404)
-
-I put the Ubuntu-14.04.mini.io in the INSTALL dir
+[Install instructions are here](InstallInstructions.md)
 
 ### What is this repository for? ###
 
