@@ -34,6 +34,7 @@
 
 ## Setting up Email ##
 
+**TODO: This doesn't (yet) work on VirtualBox**
 I've used SendGrid.com and it seems to work well.  After you create the account you're on probation for a while (maybe a couple of weeks?) and limited to 100 messages per day.  
 Once you've sent a bunch of emails without problem then they give you the total of (100 messages/day * number of days in the month) at the start of each month.
 
