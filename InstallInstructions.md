@@ -41,5 +41,6 @@ Once you've sent a bunch of emails without problem then they give you the total 
 2. I, personally, haven't been able to figure out how to use PostFix (the email server on Linux) with GitLab.  So instead I'm going to use SMTP.
 3. Instructions for [configuring GitLab to use SMTP are here](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/settings/smtp.md).  
    Instructions for how to get your SMPT info from SendGrid [are here](https://sendgrid.com/docs/Integrate/index.html)
+   http://stackoverflow.com/a/28369344/250610
 4. Don't forget to do the gitlab-ctl reconfigure once you've editted /etc/gitlab/gitlab.rb
 
