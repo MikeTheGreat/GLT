@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Git", "Git.pyproj", "{83C5F536-2C83-40A5-9C01-65B9627E82BC}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Glt", "Glt.pyproj", "{83C5F536-2C83-40A5-9C01-65B9627E82BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{06E1C792-393D-404B-A9AC-83B8701B2507}"
+	ProjectSection(SolutionItems) = preProject
+		RCFileTest.py = RCFileTest.py
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
