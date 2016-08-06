@@ -1,5 +1,9 @@
 #### NEXT STEPS:
 
+# Setting things up
+	SSH key stuff
+		Don't forget to add entries to ~/.ssh/config
+
 # Finish addHomework: upload the .git repo
 	Double-check that admin can clone student repos (even if admin wasn't added as a member)
 		#
