@@ -1,4 +1,9 @@
 # GitLabTool (GLT) #
+
+This software was possible from the support of [Cascadia Community College](http://www.cascadia.edu).
+
+This software was written by Mike Panitz
+
 ## How To Install ##
 
 [Install instructions are here](InstallInstructions.md)
@@ -28,7 +33,6 @@
 
 * Repo owner or admin
 * Other community or team contact
-* 
 
 ### License ###
 This software is licensed under the GNU GENERAL PUBLIC LICENSE, Version 3.  See [the LICENSE file](LICENSE) for more details.
