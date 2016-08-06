@@ -1,6 +1,6 @@
 # GitLabTool (GLT) #
 
-This software was possible from the support of [Cascadia Community College](http://www.cascadia.edu).
+This software was made possible by the support from [Cascadia Community College](http://www.cascadia.edu).
 
 This software was written by Mike Panitz
 
