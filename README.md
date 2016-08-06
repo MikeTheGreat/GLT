@@ -28,3 +28,7 @@
 
 * Repo owner or admin
 * Other community or team contact
+* 
+
+### License ###
+This software is licensed under the GNU GENERAL PUBLIC LICENSE, Version 3.  See [the LICENSE file](LICENSE) for more details.
