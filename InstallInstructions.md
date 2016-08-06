@@ -45,3 +45,4 @@ Once you've sent a bunch of emails without problem then they give you the total 
    http://stackoverflow.com/a/28369344/250610
 4. Don't forget to do the gitlab-ctl reconfigure once you've editted /etc/gitlab/gitlab.rb
 
+Added a change here
