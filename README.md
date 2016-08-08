@@ -2,11 +2,7 @@
 
 This software was made possible by the support from [Cascadia Community College](http://www.cascadia.edu).
 
-This software was written by Mike Panitz
-
-## How To Install ##
-
-[Install instructions are here](InstallInstructions.md)
+This software was written by Mike Panitz.
 
 ### What is this repository for? ###
 
@@ -16,12 +12,17 @@ This software was written by Mike Panitz
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
+* [Instructions for installing the GitLab server softare are here](docs/InstallInstructions.md)
+* [Instructions for installing the GitLabTool client software are here](docs/glt_install.md)
 * Dependencies
 * Database configuration
 * How to run tests
 * Deployment instructions
+
+### How To Use GLT ###
+
+* [Typical usage](docs/typical_usage.md)
+* Command-line help output
 
 ### Contribution guidelines ###
 

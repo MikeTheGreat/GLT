@@ -25,10 +25,16 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include=".gltrc" />
     <Content Include=".pylintrc" />
+    <Content Include="docs\glt_install.md" />
     <Content Include="glt\Data\BIT142.txt" />
+    <Content Include="docs\InstallInstructions.md" />
+    <Content Include="LICENSE" />
+    <Content Include="README.md" />
     <Content Include="TODO\Approach.org" />
+    <Content Include="TODO\Emacs.org" />
     <Content Include="TODO\orgcard.pdf" />
     <Content Include="SampleInputs\HTML\class_roster.html" />
     <Content Include="SampleInputs\HTML\Instructor Briefcase.html" />
@@ -86,6 +92,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="docs\" />
     <Folder Include="glt\Data\" />
     <Folder Include="Misc\" />
     <Folder Include="glt\MyClasses\" />

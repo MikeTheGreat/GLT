@@ -1,8 +1,5 @@
 #### NEXT STEPS:
 
-# Setting things up
-	SSH key stuff
-		Don't forget to add entries to ~/.ssh/config
 
 # Finish addHomework: upload the .git repo
 	Double-check that admin can clone student repos (even if admin wasn't added as a member)
@@ -26,31 +23,7 @@
 		# < Remove the dummy file - not needed >
 
 # DOCUMENT: How to connect to GitLab server via ssh
-	(This way no username/password is needed).
-	Git for Windows includes all the unix tools you could possibly need (including vim :)  )
-		In C:\Program Files\Git\usr\bin
-		You can use ssh-keygen.exe here
-			I picked the filename GitLab.priv for my private key, and GitLab.pub for my public key
-		Add it to your GitLab account
-			Profile, then SSH Keys
-		You can use ssh.exe, and it'll use your $HOME env var
-		Add an environment variable to tell GitPython to use this ssh.exe:
-			GIT_SSH_COMMAND = "C:\Program Files\Git\usr\bin\ssh.exe" -i ~/.ssh/GitLab.priv
-				Note that the quotes around the path is needed b/c of the space in Program Files
-				Note that you'll need to choose your private key (instead of GitLab.priv)
-		Test this out by setting up the env var, then cloning a test repo
-			Create the repo
-			Put a file (README.md) with a single line + commit
-			Copy the line for 'ssh' off the project page
-			find an empty directory
-			git clone git@ubuntu:root/bit142_assign_1.git
-			(if this doesn't work (WITHOUT A USERNAME/PASSWORD!!!) then something went wrong)
-			(if this does work then (hopefully) GitPython should work fine)
-
-
-# TODO: Look into using git-credentials at all?
-	https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
-	Credentials appears to be for HTTPS, while keys can replace username/pw for ssh
+	(in glt_install.md)
 
 # Add a 'check environment' option?  
 	This can check for gitlab access, local git installed, ssh keys set up, etc?
@@ -72,8 +45,6 @@
 	[Students add each other to a project they created, unless I can do something about this :(]
 	WebHooks are poorly documented and seem to only apply to commits, issues, and tags
 	[[Maybe write a routine to verify that students have not shared their projects with anyone?]]
-
-# Iron out IP issue with Cascadia
 
 # Iron out email issue
 	SMTP doesn't work?
@@ -111,7 +82,7 @@
 ###############################################################################
 ###############################################################################
 #
-# 
+# DONE: Iron out IP issue with Cascadia
 #
 # Create students: Go back and add them to any assignments that have been created for the course
 #
