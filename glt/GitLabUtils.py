@@ -67,7 +67,6 @@ def create_student_accounts(glc, student_list):
     for student in remove_from_students_no_errors:
         student_list.students_no_errors.remove(student)
 
-
 def delete_accounts_in_class(glc, course_info):
     """ Delete all accounts for students in student_list
      the Student objects MUST have an ID.  Any that don't get

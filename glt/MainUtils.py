@@ -386,7 +386,24 @@ def main():
 
         glc = connect_to_gitlab(env)
 
+		# create the project on the server
         course_info.create_homework(glc, env)
+
+		# < Add a file (on the server?) - don't appear to need to do this >
+		#
+		# Clone the GitLab repo locally
+		#
+		# Next, add a 'remote' reference in the newly-cloned repo
+		#       to the starter project on our local machine:
+		# git remote add STARTER e:\work\Tech_Research\Git_Temp\
+		# 
+		# Get all the files from the starter project:
+		# git fetch STARTER
+		#
+		# Merge the starter files into ours:
+		# git merge STARTER/master
+		#
+		# < Remove the dummy file - not needed >
 
         # This will (re-)create the data file
         # It's worth noting that this will overwrite/replace

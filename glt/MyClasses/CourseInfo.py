@@ -86,6 +86,8 @@ class CourseInfo(object):
                     student.glid])
 
     def add_student_to_project(self, glc, project_id, student):
+        """Tells the GitLab server to give the student 'reporter'
+        level permissions on the project"""
 
         user_permission = { 'project_id': project_id, \
             'access_level': 20, \
@@ -104,7 +106,10 @@ class CourseInfo(object):
         return True
 
     def create_homework(self, glc, env):
-        """ Attempt to create a homework assignment for a student"""
+        """ Attempt to create a homework assignment for a course
+        by creating a project in the GitLab server, 
+        adding a record of the assignment to the course data file, 
+        and giving all current students access to the project"""
 
         proj_name = env[EnvOptions.HOMEWORK_NAME].replace(" ", "").lower()
         proj_name = self.section + "_" + proj_name
@@ -124,8 +129,6 @@ class CourseInfo(object):
 
         # print(project_data)
 
-        # There doesn't appear to be an easy way to look up an account based on
-        # username, etc.
         # If the user's account already we'll get an error here:
         try:
             project = glc.projects.create(project_data)
@@ -147,5 +150,8 @@ class CourseInfo(object):
 
             if self.add_student_to_project(glc, project.id, student):
                 print 'Added ' + student.first_name + " " + student.last_name
+            else:
+                print_error('ERROR: Unable to add ' + student.first_name + \
+                            " " + student.last_name)
         
         # upload the provided starter repo to the server

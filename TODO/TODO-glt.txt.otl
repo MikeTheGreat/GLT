@@ -2,25 +2,8 @@
 
 
 # Finish addHomework: upload the .git repo
-	Double-check that admin can clone student repos (even if admin wasn't added as a member)
-		#
-		# Zeroth: create the project on the server
-		# 
-		# < Add a file (on the server?) - don't appear to need to do this >
-		#
-		# Clone the GitLab repo locally
-		#
-		# Next, add a 'remote' reference in the newly-cloned repo
-		#       to the starter project on our local machine:
-		# git remote add STARTER e:\work\Tech_Research\Git_Temp\
-		# 
-		# Get all the files from the starter project:
-		# git fetch STARTER
-		#
-		# Merge the starter files into ours:
-		# git merge STARTER/master
-		#
-		# < Remove the dummy file - not needed >
+	Double-check that admin can clone student repos (even if admin wasn't added as a member): YES!
+	Merge starter project into (empty) server project & push back to server
 
 # DOCUMENT: How to connect to GitLab server via ssh
 	(in glt_install.md)
