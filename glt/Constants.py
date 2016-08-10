@@ -12,6 +12,7 @@ class EnvOptions(str, Enum):
 
     # common options:
     SERVER = 'server'
+    SERVER_IP_ADDR = 'server_ip'
     USERNAME = 'username'
     PASSWORD = 'password'
 
@@ -33,3 +34,4 @@ class EnvOptions(str, Enum):
     # .gltrc file
     KNOWN_GOOD_ACCOUNTS = "known_good_accounts"
     DATA_DIR = "data_dir"
+    TEMP_DIR = "temp_dir"

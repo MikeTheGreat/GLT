@@ -21,6 +21,7 @@ from glt.GitLabUtils import connect_to_gitlab, create_student_accounts,\
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
+from glt.PrintUtils import require_env_option
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -142,6 +143,14 @@ def load_environment():
                 info_file)
         else:
             course_info = CourseInfo.CourseInfo(env[EnvOptions.SECTION])
+
+    # 'synthesize' useful variables from existing ones:
+    if (EnvOptions.SERVER not in env or \
+        env[EnvOptions.SERVER] is None) and \
+        EnvOptions.SERVER_IP_ADDR in env and \
+        env[EnvOptions.SERVER_IP_ADDR] is not None:
+        env[EnvOptions.SERVER] = "http://"+env[EnvOptions.SERVER_IP_ADDR]
+
 
     return env, parser, course_info
 
@@ -353,13 +362,9 @@ def main():
 
         print "\nAttempting to create homework assignment for " + env[EnvOptions.SECTION] + "\n"
 
-        if EnvOptions.SECTION not in env or \
-            env[EnvOptions.SECTION] is None:
-            print Fore.RED + Style.BRIGHT
-            print "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!"
-            print Style.RESET_ALL
-            exit()
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
 
         if course_info is None:
             print Fore.RED + Style.BRIGHT
@@ -368,46 +373,25 @@ def main():
             print Style.RESET_ALL
             exit()
 
-        if EnvOptions.HOMEWORK_NAME not in env or \
-            env[EnvOptions.HOMEWORK_NAME] is None:
-            print Fore.RED + Style.BRIGHT
-            print "You need to specify a name for the new homework assignment "\
-                "(e.g., assignment_1)!"
-            print Style.RESET_ALL
-            exit()
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+        "You need to specify a name for the new homework assignment "\
+                "(e.g., assignment_1)!")
 
-        if EnvOptions.HOMEWORK_DIR not in env or \
-            env[EnvOptions.HOMEWORK_DIR] is None:
-            print Fore.RED + Style.BRIGHT
-            print "You need to specify a directory containing an existing "\
-                "Git repo to start the assignment with"
-            print Style.RESET_ALL
-            exit()
+        require_env_option(env, EnvOptions.HOMEWORK_DIR, \
+        "You need to specify a directory containing an existing "\
+                "Git repo to start the assignment with")
+
+        require_env_option(env, EnvOptions.TEMP_DIR, \
+        "You need to specify a temporary directory to read/write to")
+
+        require_env_option(env, EnvOptions.SERVER_IP_ADDR, \
+        "You need to specify the IP address of the GitLab server")
 
         glc = connect_to_gitlab(env)
 
 		# create the project on the server
         course_info.create_homework(glc, env)
 
-		# < Add a file (on the server?) - don't appear to need to do this >
-		#
-		# Clone the GitLab repo locally
-		#
-		# Next, add a 'remote' reference in the newly-cloned repo
-		#       to the starter project on our local machine:
-		# git remote add STARTER e:\work\Tech_Research\Git_Temp\
-		# 
-		# Get all the files from the starter project:
-		# git fetch STARTER
-		#
-		# Merge the starter files into ours:
-		# git merge STARTER/master
-		#
-		# < Remove the dummy file - not needed >
-
-        # This will (re-)create the data file
-        # It's worth noting that this will overwrite/replace
-        # any existing files
         course_info.write_data_file(get_data_file_path(env))
         exit()
     else:

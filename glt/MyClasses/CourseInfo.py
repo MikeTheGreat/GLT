@@ -2,6 +2,11 @@
 import collections
 import csv
 import gitlab
+import os
+import shutil
+#import git
+import subprocess
+
 from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
 from glt.Constants import EnvOptions
@@ -10,6 +15,35 @@ from glt.PrintUtils import print_error
 """This exists to hold an assignment & it's GitLab ID"""
 HomeworkDesc = collections.namedtuple('HomeworkDesc', \
     ['name', 'id'])
+
+def call_git(cmd):
+    print '\nAbout to do:\n\t' + cmd + '\n'
+    ret = subprocess.call(cmd.split(), shell=True)
+    if ret < 0:
+        print_error("Could not execute '"+cmd+"'")
+        exit()
+
+
+def rmtree_remove_readonly_files(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+
+    Usage : ``shutil.rmtree(path, onerror=rmtree_remove_readonly_files)``
+
+    This code was copied from http://stackoverflow.com/questions/2656322/shutil-rmtree-fails-on-windows-with-access-is-denied
+    """
+    import stat
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
 
 class CourseInfo(object):
     """Contains information about the course, and (de)serialize to a file
@@ -131,7 +165,8 @@ class CourseInfo(object):
 
         # If the user's account already we'll get an error here:
         try:
-            project = glc.projects.create(project_data)
+            project = glc.projects.create(project_data)          
+            #project = glc.projects.get(37) 
         except gitlab.exceptions.GitlabCreateError as exc:
             print_error("unable to create project " + proj_name)
             print_error( str(exc.response_code)+": "+ str(exc.error_message))
@@ -153,5 +188,49 @@ class CourseInfo(object):
             else:
                 print_error('ERROR: Unable to add ' + student.first_name + \
                             " " + student.last_name)
-        
-        # upload the provided starter repo to the server
+                
+        # The ssh connection string should look like:
+        #   git@ubuntu:root/bit142_assign_1.git
+        sshStr = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
+        # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
+        # The VM thinks it's servername is "ubuntu".  By using
+        # the environment's server IP addr setting we can get around this.
+        print "About to clone from: " + sshStr
+
+        cwd_prev = os.getcwd()
+        os.chdir(env[EnvOptions.TEMP_DIR])
+        starter_project_name = "STARTER"
+
+        # clone the newly-created project locally
+        # so that we can use normal command-line git tools here
+        #
+        call_git("git clone " + sshStr)
+
+        # next, move into the directory 
+        # (so that subsequent commands affect the new repo)
+        os.chdir(env[EnvOptions.TEMP_DIR]+os.path.sep+project.name)
+
+		# Next, add a 'remote' reference in the newly-cloned repo
+		#       to the starter project on our local machine:
+        call_git("git remote add "+starter_project_name+" "\
+            +env[EnvOptions.HOMEWORK_DIR])
+
+        # Get all the files from the starter project:
+        call_git("git fetch " + starter_project_name)
+
+        # Merge the starter files into our new project:
+        call_git("git merge "+starter_project_name+"/master")
+
+        # Clean up (remove) the remove reference
+        # TODO: Do we actually need to do this? Refs don't get pushed,
+        #       and we delete the whole thing in the next step...
+        call_git("git remote remove "+starter_project_name)
+
+        # Push the changes back up to GitLab
+        call_git("git push")
+
+        # Clear the temporary directory
+        os.chdir(cwd_prev)
+        shutil.rmtree(env[EnvOptions.TEMP_DIR]+project.name, onerror=rmtree_remove_readonly_files)
+
+
