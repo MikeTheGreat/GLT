@@ -1,19 +1,26 @@
 
 * Advice from Rusty et al:
-The GitLab API is rather good and you could use it for all of your repo setup with permissions and whatnot. Here is what I think you'd want to do.
+  :Approach:
+  The GitLab API is rather good and you could use it for all of your repo setup with permissions and whatnot. Here is what I think you'd want to do.
+  
+  Create a script that will create a group in GitLab for homework assignment. The script could then pull in the users from the class that this assignment is for. It would then create a privite repository in this group for each student from the class. It could then also email them the link to the newly created git repository for their assignment.
+  
+  If you wanted to include instructions within the repo about the assignment, create a base git repo with a README.md file explaining the details for each assignment. Then for repository creation, create a fork of this repository for each student as a private repository (basically like above except we are forking instead of creating an empty repository).
+  
+  For being able to grade offline, I'd say you'd want to write a script that would check out every git repository in a given group. That would give you each students submissions for the homework assignment with one script.
 
-Create a script that will create a group in GitLab for homework assignment. The script could then pull in the users from the class that this assignment is for. It would then create a privite repository in this group for each student from the class. It could then also email them the link to the newly created git repository for their assignment.
-
-If you wanted to include instructions within the repo about the assignment, create a base git repo with a README.md file explaining the details for each assignment. Then for repository creation, create a fork of this repository for each student as a private repository (basically like above except we are forking instead of creating an empty repository).
-
-For being able to grade offline, I'd say you'd want to write a script that would check out every git repository in a given group. That would give you each students submissions for the homework assignment with one script.
-
-Further down the road ...
 You could also turn on GitLab CI for automatic evualuation of the assignment. This would essentially build the code into a live environment to run tests against and return the results. Going this route would also be beneficial to do the forking method as the jobs in CI are all controlled by a '.gitlab-ci.yml' file. Forking the base repo with this file will automatically add CI jobs for the newly created fork'd repository.
+  :END:
 
+  :FutureIdeas:
 If you had a long running project that went the length of a class (ie a webapp, start with a home page, add shopping cart, add this, add that), then you could also automaticlaly assign new assignments by creating an issue in the project for each repository in the group (through the API). So maybe the base repo everyone forks from is an empty Rails project or something. Then you could add an issue against everyone's forks to add a model that creates these tables in the database. Add another issue to setup user login, etc.
-
-
+  :END:
+** Idea 2
+**** subtopic
+***** asdfsdf
+** Idea 3
+**** subtopic
+***** asdfsdf
 
 * Create student accounts workflow:
   Read in a file of students, and create an account for each one
@@ -111,3 +118,8 @@ If you had a long running project that went the length of a class (ie a webapp, 
 
 * GitDo: execute a <shell script> once per git repo, given a list of git repos
 	This could be used to add files to everyone's git repos, commit the file, and then push the changes
+
+
+:Test:
+adfasdfasd
+:END:
