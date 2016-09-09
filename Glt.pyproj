@@ -47,8 +47,8 @@
     <Content Include="SampleInputs\HTML\Instructor Briefcase_files\waci110.html" />
     <Content Include="SampleInputs\Text\StudentList_Short.csv" />
     <Content Include="SampleInputs\Text\StudentList_Singleton.csv" />
-    <Content Include="TODO\TODO-glt.txt.otl" />
     <Content Include="TODO\Approach.txt.otl" />
+    <Content Include="TODO\TODO-glt.org" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="glt\Constants.py">

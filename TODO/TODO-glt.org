@@ -1,15 +1,15 @@
 * NEXT STEPS:
 
+** Finish addHomework: upload the .git repo
+	Double-check that admin can clone student repos (even if admin wasn't added as a member): YES!
+	Merge starter project into (empty) server project & push back to server
+
 ** how to idempotently allow for a HW project to be added  
-** 
+
 ** add a 'clean_temp' function to delete dir & everything in it
 	Always do this at the end of the program
 
 ** add a 'required env option' routine to factor out all that checking
-
-** Finish addHomework: upload the .git repo
-	Double-check that admin can clone student repos (even if admin wasn't added as a member): YES!
-	Merge starter project into (empty) server project & push back to server
 
 ** HomeworkDescs aren't being sorted correctly, are they (no comparison method?)
 
