@@ -5,7 +5,7 @@ from colorama import Fore, Style, init # Back,
 init()
 
 def require_env_option(env, option, msg):
-    """Verify that <option> is in <env>. 
+    """Verify that <option> is in <env>.
     Otherwise print out <msg> and exit the program"""
     if option not in env or \
     env[option] is None:

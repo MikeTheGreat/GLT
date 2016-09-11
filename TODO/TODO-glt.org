@@ -1,15 +1,9 @@
 * NEXT STEPS:
-
-** Finish addHomework: upload the .git repo
-	Double-check that admin can clone student repos (even if admin wasn't added as a member): YES!
-	Merge starter project into (empty) server project & push back to server
-
-** how to idempotently allow for a HW project to be added  
-
+** Figure out how the projects are linked
+*** Create a bunch, then list projects to see how to find all the projects forked from the starter....
+** Figure out how to clone and/or sync all the forked projects for a homework assignment
 ** add a 'clean_temp' function to delete dir & everything in it
 	Always do this at the end of the program
-
-** add a 'required env option' routine to factor out all that checking
 
 ** HomeworkDescs aren't being sorted correctly, are they (no comparison method?)
 
@@ -36,9 +30,11 @@
 
 ** Delete students for a class: DOCUMENT THIS
 
+** Add homework
 * Needed Tests
 ** Create students for a class: TEST THIS
 ** Delete students for a class: TEST THIS
+** Add homework
 * Don't forget
 
 ** Add a 'check environment' option?  
@@ -74,6 +70,27 @@
 ** Create a forum for people to ask questions about GLT?
 
 * Finished
+** DONE add a 'required env option' routine to factor out all that checking
+   CLOSED: [2016-09-10 Sat 22:33]
+
+
+** DONE Finish addHomework: upload the .git repo
+   CLOSED: [2016-09-10 Sat 22:33]
+	Double-check that admin can clone student repos (even if admin wasn't added as a member): YES!
+	Merge starter project into (empty) server project & push back to server
+
+
+** DONE how to idempotently allow for a HW project to be added 
+   CLOSED: [2016-09-10 Sat 22:33]
+
+*** Verify that this is working :)
+
+*** In Course_Info.create_homework, when we try to create a HW assignmnet and fail (because it's already there) then go look it up so that we can try to (re-)add students to it
+
+
+
+** DONE call_git should confirm success
+   CLOSED: [2016-09-10 Sat 22:30]
 
 ** DONE: Iron out IP issue with Cascadia
 ** Create students: Go back and add them to any assignments that have been created for the course

@@ -1,28 +1,30 @@
 """Contains the CourseInfo object"""
 import collections
 import csv
-import gitlab
 import os
 import shutil
 #import git
 import subprocess
+import gitlab
 
 from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
 from glt.Constants import EnvOptions
 from glt.PrintUtils import print_error
 
-"""This exists to hold an assignment & it's GitLab ID"""
+# """This exists to hold an assignment & it's GitLab ID"""
 HomeworkDesc = collections.namedtuple('HomeworkDesc', \
     ['name', 'id'])
 
 def call_git(cmd):
+    """Invokes git in a command-line shell"""
     print '\nAbout to do:\n\t' + cmd + '\n'
     ret = subprocess.call(cmd.split(), shell=True)
     if ret < 0:
         print_error("Could not execute '"+cmd+"'")
         exit()
-
+    else:
+        print '\nGit Command:\n\t' + cmd + ' - SUCCEEDED\n'
 
 def rmtree_remove_readonly_files(func, path, exc_info):
     """
@@ -88,8 +90,8 @@ class CourseInfo(object):
                 sz_assignment = input_file.readline().strip()
                 if sz_assignment != "":
                     chunks = sz_assignment.split(",")
-                    i = 0;
-                    while i < len(chunks)/2:                        
+                    i = 0
+                    while i < len(chunks)/2:
                         self.assignments.append( \
                             HomeworkDesc(chunks[i], chunks[i+1]))
                         i += 2
@@ -108,7 +110,7 @@ class CourseInfo(object):
             f_out.write("Assignments\n")
 
             for assign in self.assignments:
-                f_out.write(assign.name+","+str(assign.id) )
+                f_out.write(assign.name+","+str(assign.id))
             f_out.write("\n")
 
             f_out.write("Roster\n")
@@ -123,26 +125,26 @@ class CourseInfo(object):
         """Tells the GitLab server to give the student 'reporter'
         level permissions on the project"""
 
-        user_permission = { 'project_id': project_id, \
+        user_permission = {'project_id': project_id, \
             'access_level': 20, \
-            'user_id': student.glid }
+            'user_id': student.glid}
         # access_level:
         # 10 = guest, 20 = reporter, 30 = developer, 40 = master
         # Anything else causes an error (e.g., 31 != developer)
-        
+
         try:
             membership = glc.project_members.create(user_permission)
         except gitlab.exceptions.GitlabCreateError as exc:
             print_error("ERROR: unable to add " + student.first_name + " " \
                 + student.last_name + " to the project!")
-            print_error( str(exc.response_code)+": "+ exc.error_message)
+            print_error(str(exc.response_code)+": "+ exc.error_message)
             return False
         return True
 
     def create_homework(self, glc, env):
         """ Attempt to create a homework assignment for a course
-        by creating a project in the GitLab server, 
-        adding a record of the assignment to the course data file, 
+        by creating a project in the GitLab server,
+        adding a record of the assignment to the course data file,
         and giving all current students access to the project"""
 
         proj_name = env[EnvOptions.HOMEWORK_NAME].replace(" ", "").lower()
@@ -165,20 +167,30 @@ class CourseInfo(object):
 
         # If the user's account already we'll get an error here:
         try:
-            project = glc.projects.create(project_data)          
-            #project = glc.projects.get(37) 
+            project = glc.projects.create(project_data)
+            print "Created : " + project.name_with_namespace
+
+            # Remember that we created the assignment
+            # This will be serialized to disk (in the section's data file)
+            # at the end of this command
+            self.assignments.append(HomeworkDesc(proj_name, project.id))
+            self.assignments.sort()
+
         except gitlab.exceptions.GitlabCreateError as exc:
-            print_error("unable to create project " + proj_name)
-            print_error( str(exc.response_code)+": "+ str(exc.error_message))
 
-        print "Created : " + project.name_with_namespace
+            # If the project already exists, look up it's info
+            # and then proceed to add students to it
+            if exc.error_message['name'][0].find("already been taken") >= 0:
+                proj_path = env[EnvOptions.USERNAME]+"/"+ proj_name
+                project = glc.projects.get(proj_path)
+                print "Found existing project " + project.name_with_namespace
+            else:
+                # For anything else, just exit here
+                print_error("Unable to create project " + proj_name)
+                print_error(str(exc.response_code)+": "+ str(exc.error_message))
+                exit()
+
         #print project
-
-        # Remember that we created the assignment
-        # This will be serialized to disk (in the section's data file)
-        # at the end of this command
-        self.assignments.append( HomeworkDesc( proj_name, project.id ) )
-        self.assignments.sort()
 
         # add each student to the project as a reporter
         for student in self.roster.students_no_errors:
@@ -188,14 +200,23 @@ class CourseInfo(object):
             else:
                 print_error('ERROR: Unable to add ' + student.first_name + \
                             " " + student.last_name)
-                
+
+        # This is the part where we add the local, 'starter' repo to the
+        # GitLab repo.
+        # This should be idempotent:
+        # If you already have a GitLab repo, and...
+        # 1)    If the local, starter repo and the GitLab repo are the
+        #       same then no changes will be made to the GitLab repo
+        # 2)    If the local, starter repo is different from the GitLab
+        #       repo  then we'll update the existing GitLab repo
+
         # The ssh connection string should look like:
         #   git@ubuntu:root/bit142_assign_1.git
-        sshStr = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
+        ssh_str = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
         # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
         # The VM thinks it's servername is "ubuntu".  By using
         # the environment's server IP addr setting we can get around this.
-        print "About to clone from: " + sshStr
+        print "About to clone from: " + ssh_str
 
         cwd_prev = os.getcwd()
         os.chdir(env[EnvOptions.TEMP_DIR])
@@ -204,9 +225,9 @@ class CourseInfo(object):
         # clone the newly-created project locally
         # so that we can use normal command-line git tools here
         #
-        call_git("git clone " + sshStr)
+        call_git("git clone " + ssh_str)
 
-        # next, move into the directory 
+        # next, move into the directory
         # (so that subsequent commands affect the new repo)
         os.chdir(env[EnvOptions.TEMP_DIR]+os.path.sep+project.name)
 

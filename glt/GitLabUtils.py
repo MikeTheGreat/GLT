@@ -100,7 +100,7 @@ def delete_accounts_in_class(glc, course_info):
 def list_projects(glc):
     """ List all the projects in the GitLabServer """
 
-    projects = glc.projects.all()    
+    projects = glc.projects.all()
     if len(projects) == 0:
         print "No projects present"
         return

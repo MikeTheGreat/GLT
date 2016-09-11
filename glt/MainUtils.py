@@ -240,24 +240,15 @@ def main():
 
     env, parser, course_info = load_environment()
 
-    if EnvOptions.ACTION not in env or \
-        env[EnvOptions.ACTION] is None:
-        print Fore.RED + Style.BRIGHT
-        print "Unrecognized action (or no action listed)"
-        print Style.RESET_ALL
-        exit()
+    require_env_option(env, EnvOptions.ACTION, "Unrecognized action (or no action listed)")
 
     if env[EnvOptions.ACTION] == EnvOptions.CREATE_STUDENTS:
 
         print "\nAttempting to create student accounts for " + env[EnvOptions.SECTION] + "\n"
 
-        if EnvOptions.SECTION not in env or \
-            env[EnvOptions.SECTION] is None:
-            print Fore.RED + Style.BRIGHT
-            print "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!"
-            print Style.RESET_ALL
-            exit()
+        require_env_option(env, EnvOptions.SECTION, \
+            "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
 
         if course_info is None:
             print Fore.RED + Style.BRIGHT
@@ -306,9 +297,9 @@ def main():
         # This probably won't happen much, but it will make it easier
         # to add students to a class late
         for assignment in course_info.assignments:
-            project = glc.projects.get({'project_id':assignment.id});
+            project = glc.projects.get({'project_id':assignment.id})
             for student in course_info.roster.students_no_errors:
-                if course_info.add_student_to_project( glc, project.project_id, student):
+                if course_info.add_student_to_project(glc, project.project_id, student):
                     print 'Added ' + student.first_name + " " + student.last_name \
                         + " to existing project " + assignment.name
 

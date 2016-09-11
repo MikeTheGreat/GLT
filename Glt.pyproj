@@ -30,10 +30,11 @@
     <Content Include=".pylintrc" />
     <Content Include="docs\glt_install.md" />
     <Content Include="docs\typical_usage.md" />
-    <Content Include="glt\Data\BIT142.txt" />
     <Content Include="docs\InstallInstructions.md" />
     <Content Include="LICENSE" />
+    <Content Include="Misc\Data\BIT142.txt" />
     <Content Include="README.md" />
+    <Content Include="SampleInputs\Git_Repos\A1\File.txt" />
     <Content Include="TODO\Approach.org" />
     <Content Include="TODO\Emacs.org" />
     <Content Include="TODO\orgcard.pdf" />
@@ -94,11 +95,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="docs\" />
-    <Folder Include="glt\Data\" />
     <Folder Include="Misc\" />
     <Folder Include="glt\MyClasses\" />
     <Folder Include="glt\" />
     <Folder Include="glt\Parsers\" />
+    <Folder Include="Misc\Data\" />
     <Folder Include="SampleInputs\Git_Repos\" />
     <Folder Include="SampleInputs\Git_Repos\A1\" />
     <Folder Include="TODO\" />
