@@ -24,6 +24,9 @@ class EnvOptions(str, Enum):
 
     DELETE_CLASS = "deleteClass"
 
+    DOWNLOAD_HOMEWORK = "download"
+    STUDENT_WORK_DIR = "student_work_dir"
+
     # command line option for listing projects
     LIST_PROJECTS = "listProjects"
 

@@ -5,13 +5,18 @@ _NOTFOUND = object()
 class Student(object):
     """Student objects contain a first and last name and email"""
 
-    def __init__(self, f_name, l_name, email, glid=-1):
+    def __init__(self, f_name=None, l_name=None, email=None, glid=-1, **kwargs):
         """constructor.  Given first name, last name, and email address.
         email may be empty"""
-        self.first_name = f_name
-        self.last_name = l_name
-        self.email = email
-        self.glid = glid
+        if not kwargs:
+            self.first_name = f_name
+            self.last_name = l_name
+            self.email = email
+            self.glid = glid
+        else:
+            self.glid = kwargs.get('id')
+            username = kwargs.get('username')
+            self.first_name, self.last_name = self.get_real_name(username)
 
     def __str__(self):
         """converts to string, in the format "Last, First, Email, GitLab-ID"""
@@ -45,12 +50,23 @@ class Student(object):
         return True
 
     def get_user_name(self):
-        """Gets a username suitable for use in GitLab.  Currently it's <first name><last name>"""
-        return self.first_name+self.last_name
+        """Gets a username suitable for use in GitLab.  
+        Currently it's <first name>_<last name>"""
+        return self.first_name+"_"+self.last_name
 
     def get_group_name(self):
         """Gets a name for a group, in order to create a group
         containing just this student"""
         return self.get_user_name() + "_GROUP"
 
+    def get_real_name(self, username):
+        """Given a username (Currently it's <first name>_<last name>),
+        return first_name, last_name"""
+        return username.split('_')
+
+    def get_dir_name(self):
+        """Get a directory name suitable for saving homework in.
+        Currently it's:
+            self.last_name + ", " + self.first_name"""
+        return self.last_name + ", " + self.first_name
 

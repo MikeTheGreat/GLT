@@ -1,4 +1,5 @@
 """Contains the CourseInfo object"""
+import datetime
 import collections
 import csv
 import os
@@ -7,6 +8,7 @@ import shutil
 import subprocess
 import gitlab
 
+from glt.MyClasses.Student import Student
 from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
 from glt.Constants import EnvOptions
@@ -15,6 +17,11 @@ from glt.PrintUtils import print_error
 # """This exists to hold an assignment & it's GitLab ID"""
 HomeworkDesc = collections.namedtuple('HomeworkDesc', \
     ['name', 'id'])
+
+# """This exists to hold the info relevant to a recently 
+# downloaded/updated student project"""
+StudentHomeworkUpdateDesc = collections.namedtuple('StudentHomeworkUpdateDesc', \
+    ['student', 'student_dest_dir', 'project', 'timestamp'])
 
 def call_git(cmd):
     """Invokes git in a command-line shell"""
@@ -37,7 +44,8 @@ def rmtree_remove_readonly_files(func, path, exc_info):
 
     Usage : ``shutil.rmtree(path, onerror=rmtree_remove_readonly_files)``
 
-    This code was copied from http://stackoverflow.com/questions/2656322/shutil-rmtree-fails-on-windows-with-access-is-denied
+    This code was copied from
+    http://stackoverflow.com/questions/2656322/shutil-rmtree-fails-on-windows-with-access-is-denied
     """
     import stat
     if not os.access(path, os.W_OK):
@@ -93,7 +101,7 @@ class CourseInfo(object):
                     i = 0
                     while i < len(chunks)/2:
                         self.assignments.append( \
-                            HomeworkDesc(chunks[i], chunks[i+1]))
+                            HomeworkDesc(chunks[i], int(chunks[i+1])))
                         i += 2
 
             elif next_line == "Roster":
@@ -133,7 +141,8 @@ class CourseInfo(object):
         # Anything else causes an error (e.g., 31 != developer)
 
         try:
-            membership = glc.project_members.create(user_permission)
+            #membership = glc.project_members.create(user_permission)
+            glc.project_members.create(user_permission)
         except gitlab.exceptions.GitlabCreateError as exc:
             print_error("ERROR: unable to add " + student.first_name + " " \
                 + student.last_name + " to the project!")
@@ -141,14 +150,21 @@ class CourseInfo(object):
             return False
         return True
 
+    def homework_to_project_name(self, hw_name):
+        """Given hw_name (e.g., "Assign_1"), produce the GitLab project name.
+        Project name is {section_name}_{hw_name.lower()}"""
+        proj_name = hw_name.replace(" ", "").lower()
+        proj_name = self.section + "_" + proj_name
+        return proj_name
+
     def create_homework(self, glc, env):
         """ Attempt to create a homework assignment for a course
         by creating a project in the GitLab server,
         adding a record of the assignment to the course data file,
         and giving all current students access to the project"""
 
-        proj_name = env[EnvOptions.HOMEWORK_NAME].replace(" ", "").lower()
-        proj_name = self.section + "_" + proj_name
+        proj_name = self.homework_to_project_name( \
+            env[EnvOptions.HOMEWORK_NAME])
 
         project_data = {'name': proj_name, \
             'issues_enabled': False, \
@@ -160,7 +176,6 @@ class CourseInfo(object):
             'builds_enabled': False, \
             'public_builds': False, \
             'public': False, \
-            'visibility_level': 0, \
             }
 
         # print(project_data)
@@ -254,4 +269,111 @@ class CourseInfo(object):
         os.chdir(cwd_prev)
         shutil.rmtree(env[EnvOptions.TEMP_DIR]+project.name, onerror=rmtree_remove_readonly_files)
 
+    def download_homework(self, glc, env):
 
+        if not self.assignments:
+            print_error( self.section + " doesn't have any assignments "\
+               " to download")
+            exit()
+
+        updated_student_projects = list()
+
+        # After this, one of three things is true:
+        #   1) hw_to_download is a list of all the homework project
+        #   2) hw_to_download is a list of exactly one homework project
+        #   3) EnvOptions.HOMEWORK_NAME didn't match anything and we exit
+        #
+        # 'homework project' is a copy of the HomeworkDesc named tuple (name,id)
+        
+        if env[EnvOptions.HOMEWORK_NAME].lower() == 'all':
+            # we're going to make a new list with all the projects
+            hw_name = 'all'
+            hw_to_download = list(self.assignments)
+        else:
+            # we're going to make a new list that should match just one
+            # homework assignment
+            hw_name = self.homework_to_project_name(env[EnvOptions.HOMEWORK_NAME])
+            hw_to_download = [item for item in self.assignments if item.name == hw_name]
+
+        if not hw_to_download:# if list is empty
+            print_error( env[EnvOptions.HOMEWORK_NAME] + " (internal name: " +\
+                hw_name + " ) doesn't match any of the have any assignments"\
+               " in section " + env[EnvOptions.SECTION])
+            exit()
+        
+        # First make sure that we can at least create the 'root'
+        # directory for saving all the homework projects:
+        dest_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
+            env[EnvOptions.SECTION])
+        if not os.path.isdir(dest_dir):
+            os.makedirs(dest_dir) # throws an exception on fail
+
+        # Next, go through all the projects and see which
+        # (if any) were forked from the target project
+        projects = glc.projects.all()
+        if not projects:
+            print "There are no projects present on the GitLab server"
+            return
+
+        print "Found the following projects:\n"
+        for project in projects:
+            print project.name + " ID: " + str(project.id)
+
+            # See if the project matches any of the
+            # 1/many projects that we're trying to download
+            forked_project = None
+            if hasattr(project, 'forked_from_project'):
+                for hw in hw_to_download:
+                    if project.forked_from_project['id'] == hw.id:
+                        forked_project = hw
+                        break
+
+            if forked_project is None:
+                print "\tNOT a forked project\n"
+                continue
+
+            print "\tProject was forked from " + forked_project.name \
+                + " (ID:"+str(forked_project.id)+")"
+
+            project.pretty_print(1)
+            print "="*20
+            print
+
+            owner_name = project.path_with_namespace.split('/')[0]
+            student = Student(username=owner_name, id=project.owner.id)
+
+            # make a dir for this particular project
+            student_dest_dir = os.path.join(dest_dir, \
+                env[EnvOptions.HOMEWORK_NAME], \
+                student.get_dir_name())
+            if not os.path.isdir(dest_dir):
+                os.makedirs(student_dest_dir)
+
+            # clone the repo into the project
+            # The ssh connection string should look like:
+            #   git@ubuntu:root/bit142_assign_1.git
+            ssh_str = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
+            # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
+            # The VM thinks it's servername is "ubuntu".  By using
+            # the environment's server IP addr setting we can get around this.
+            print "About to clone from: " + ssh_str
+
+            cwd_prev = os.getcwd()
+            os.chdir(student_dest_dir)
+            
+            # clone the newly-created project locally
+            # so that we can use normal command-line git tools here
+            #
+            call_git("git clone " + ssh_str)
+
+            os.chdir(cwd_prev)
+
+            # add the repo into the list of updated projects
+            # add ( student, \
+            #       student_dest_dir, \
+            #       project name & id, \
+            #       timestamp =datetime.datetime.now())
+            updated_student_projects.append( \
+                StudentHomeworkUpdateDesc(student, \
+                          student_dest_dir, project, \
+                          datetime.datetime.now()) )

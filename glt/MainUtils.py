@@ -5,6 +5,8 @@ but don't want to clutter up glt.py with"""
 # addStudents BIT142 E:\Work\Tech_Research\Git\SampleInputs\Text\StudentList_Short_AllGood.csv
 # deleteClass BIT142
 # addHomework BIT142 Assign_1 E:\Work\Tech_Research\Git\SampleInputs\Git_Repos\A1
+# download BIT142 Assign_1
+# download BIT142 all
 import argparse
 import os.path
 
@@ -21,7 +23,7 @@ from glt.GitLabUtils import connect_to_gitlab, create_student_accounts,\
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
-from glt.PrintUtils import require_env_option
+from glt.PrintUtils import require_env_option, print_error
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -30,53 +32,76 @@ def parse_args():
     # Note: These must be listed (on the command line) before the subparser options
     common_parser = argparse.ArgumentParser(add_help=False)
     grp_server = common_parser.add_argument_group('Server Info', \
-        "Options related to the server that you're using")
-    grp_server.add_argument('-s', '--'+EnvOptions.SERVER, \
-        help="URL for the GitLab server (e.g., http://10.0.0.17)")
-    grp_server.add_argument('-u', '--'+EnvOptions.USERNAME, \
-        help="Username to send to the GitLab server for authentication (e.g., root)")
-    grp_server.add_argument('-p', '--'+EnvOptions.PASSWORD, help="Password for the GitLab account")
+       "Options related to the server that you're using")
+    grp_server.add_argument('-s', '--'+EnvOptions.SERVER.value, \
+       help="URL for the GitLab server (e.g., http://10.0.0.17)")
+    grp_server.add_argument('-u', '--'+EnvOptions.USERNAME.value, \
+       help="Username to send to the GitLab server for authentication (e.g., root)")
+    grp_server.add_argument('-p', '--'+EnvOptions.PASSWORD.value,\
+       help="Password for the GitLab account")
 
     ### Set up the main parser, and it's subparsers
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest=EnvOptions.ACTION)
+    subparsers = parser.add_subparsers(dest=EnvOptions.ACTION.value)
 
     ################ Add Students ################
-    add_students_parser = subparsers.add_parser(EnvOptions.CREATE_STUDENTS, \
+    add_students_parser = subparsers.add_parser(\
+        EnvOptions.CREATE_STUDENTS.value, \
               help="Read student info from a file and create accounts" \
              " in the GitLab server", parents=[common_parser])
-    add_students_parser.add_argument(EnvOptions.SECTION, help='Name of the course (e.g., bit142)')
-    add_students_parser.add_argument(EnvOptions.INFILE, type=argparse.FileType('r'), \
+    add_students_parser.add_argument(EnvOptions.SECTION.value,\
+       help='Name of the course (e.g., bit142)')
+    add_students_parser.add_argument(EnvOptions.INFILE.value,\
+        type=argparse.FileType('r'), \
         help="Specify the file that contains the student info.  " \
                                      "File type is inferred from the extension")
-    add_students_parser.add_argument('-t', '--'+EnvOptions.INFILE_TYPE, \
+    add_students_parser.add_argument('-t', '--'+EnvOptions.INFILE_TYPE.value, \
         help="Specify the file type, " \
         "overriding the file extension.  Currently recognized options are 'csv', 'txt' "\
         "(which is csv), 'html' or 'wa_html' (from the Instructor Briefcase" \
         " roster pages in WA state)")
 
     ################ Delete Class ################
-    delete_class_parser = subparsers.add_parser(EnvOptions.DELETE_CLASS, \
+    delete_class_parser = subparsers.add_parser(EnvOptions.DELETE_CLASS.value,\
               help="Remove all students accounts in the GitLab server" \
-                " for a class/course (using the Known Good List of students" \
-               " in that class", parents=[common_parser])
-    delete_class_parser.add_argument(EnvOptions.SECTION, help='Name of the course (e.g., bit142)')
+                " for a class/course (note that students' projects are "\
+                "not removed)" \
+               , parents=[common_parser])
+    delete_class_parser.add_argument(EnvOptions.SECTION.value,\
+        help='Name of the course (e.g., bit142)')
 
     ################ Add Homework ################
-    add_students_parser = subparsers.add_parser(EnvOptions.NEW_HOMEWORK, \
+    add_students_parser = subparsers.add_parser(EnvOptions.NEW_HOMEWORK.value, \
               help="Add a homework assignment to GitLab; allow students to "\
               "fork it (but not issue pull requests back to it)", \
               parents=[common_parser])
-    add_students_parser.add_argument(EnvOptions.SECTION, \
+    add_students_parser.add_argument(EnvOptions.SECTION.value, \
         help='Name of the course (e.g., bit142)')
-    add_students_parser.add_argument(EnvOptions.HOMEWORK_NAME, \
+    add_students_parser.add_argument(EnvOptions.HOMEWORK_NAME.value, \
         help='Name of the homework assignment (e.g., Assignment_1)')
-    add_students_parser.add_argument(EnvOptions.HOMEWORK_DIR, \
+    add_students_parser.add_argument(EnvOptions.HOMEWORK_DIR.value, \
         help="Specify a path to a directory that contains a Git repo "\
         "to seed the server with")
 
+    ################ Download Homework ################
+    download_parser = subparsers.add_parser(EnvOptions.DOWNLOAD_HOMEWORK.value, \
+              help="Download student homework assignments (git projects)"\
+              "from GitLab to a local directory", \
+              parents=[common_parser])
+    download_parser.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    download_parser.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1) OR '\
+        '\'all\' to download all assignments')
+    download_parser.add_argument('-w', '--'+(EnvOptions.STUDENT_WORK_DIR.value), \
+        help="Specify a path to a directory to put the student work into."\
+        "Each assignment will be placed in a subdirectory named after the "\
+        "assignment, and each student's work will be placed in a "\
+        "sub-subdirectory with the student's last and first name")
+
     ################ List Projects ################
-    subparsers.add_parser(EnvOptions.LIST_PROJECTS, help='List all projects" \
+    subparsers.add_parser(EnvOptions.LIST_PROJECTS.value,\
+       help='List all projects" \
         " on the server', parents=[common_parser])
 
     ### Actually do the parsing:
@@ -311,15 +336,11 @@ def main():
 
     if env[EnvOptions.ACTION] == EnvOptions.DELETE_CLASS:
 
-        print "\nAttempting to delete student accounts in " + env[EnvOptions.SECTION] + "\n"
+        require_env_option(env, EnvOptions.SECTION, \
+            "You need to specify a section (course -e.g., bit142)"\
+               " to delete all the student accounts!")
 
-        if EnvOptions.SECTION not in env or \
-            env[EnvOptions.SECTION] is None:
-            print Fore.RED + Style.BRIGHT
-            print "You need to specify a section (course -e.g., bit142)"\
-               " to delete all the student accounts!"
-            print Style.RESET_ALL
-            exit()
+        print "\nAttempting to delete student accounts in " + env[EnvOptions.SECTION] + "\n"
 
         if course_info is None:
             print Fore.RED + Style.BRIGHT
@@ -342,20 +363,13 @@ def main():
         course_info.roster.print_errors()
         exit()
 
-    elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:
-        glc = connect_to_gitlab(env)
-        print 'Listing projects:'
-        list_projects(glc)
-
-        exit()
-
     elif env[EnvOptions.ACTION] == EnvOptions.NEW_HOMEWORK:
-
-        print "\nAttempting to create homework assignment for " + env[EnvOptions.SECTION] + "\n"
 
         require_env_option(env, EnvOptions.SECTION, \
         "You need to specify a section (course -e.g., bit142)"\
                " to create all the student accounts!")
+
+        print "\nAttempting to create homework assignment for " + env[EnvOptions.SECTION] + "\n"
 
         if course_info is None:
             print Fore.RED + Style.BRIGHT
@@ -385,6 +399,49 @@ def main():
 
         course_info.write_data_file(get_data_file_path(env))
         exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.DOWNLOAD_HOMEWORK:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        if env[EnvOptions.HOMEWORK_NAME] == 'all':
+            print "\nAttempting to download homework assignments for " \
+                + env[EnvOptions.SECTION] + "\n"
+        else:
+            print "\nAttempting to download all homework assignment " +\
+              env[EnvOptions.HOMEWORK_NAME] + " for " + \
+              env[EnvOptions.SECTION] + "\n"
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory to download the homework "\
+            "assignment(s) to")
+
+        if course_info is None:
+            print Fore.RED + Style.BRIGHT
+            print "Could not find the data file for this section " \
+                "(expected to find it at " + get_data_file_path(env) + ")"
+            print Style.RESET_ALL
+            exit()
+
+        glc = connect_to_gitlab(env)
+
+        course_info.download_homework(glc, env)
+
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:
+        glc = connect_to_gitlab(env)
+        print 'Listing projects:'
+        list_projects(glc)
+
+        exit()
+
     else:
         print Fore.RED + Style.BRIGHT + "\nNo recognized arguments!\n"+ Style.RESET_ALL
         parser.print_help()

@@ -26,6 +26,8 @@ temp_dir=e:\Work\Tech_Research\Git\Temp\
 ; GLT will lower-case any arguments so you can type whatever you want
 ; on the command line
 
+student_work_dir=e:\Work\Tech_Research\Git\Misc\StudentDownloads
+
 ; This file is where students' account info is stored
 ; This is important because GitLab wants us to ask for stuff by ID
 ; and it appears to be difficult to get objects any other way

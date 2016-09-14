@@ -1,7 +1,14 @@
 * NEXT STEPS:
-** Figure out how the projects are linked
-*** Create a bunch, then list projects to see how to find all the projects forked from the starter....
+
 ** Figure out how to clone and/or sync all the forked projects for a homework assignment
+
+*** DONE Verify that args are parsing correctly
+    CLOSED: [2016-09-14 Wed 01:38]
+*** DONE Which directory to put everything into?
+    CLOSED: [2016-09-14 Wed 01:39]
+*** Verify that 'all' will download all assignments
+*** Make sure that we can update existing repos
+*** Print out the list of updated assignments
 ** add a 'clean_temp' function to delete dir & everything in it
 	Always do this at the end of the program
 
@@ -70,7 +77,10 @@
 ** Create a forum for people to ask questions about GLT?
 
 * Finished
-** DONE add a 'required env option' routine to factor out all that checking
+** DONE Figure out how the projects are linked
+   CLOSED: [2016-09-12 Mon 21:57]
+*** Create a bunch, then list projects to see how to find all the projects forked from the starter....
+*** Optional 'forked_from_project' dict** DONE add a 'required env option' routine to factor out all that checking
    CLOSED: [2016-09-10 Sat 22:33]
 
 
