@@ -1,12 +1,6 @@
 """ MainUtils contain functions,etc, that I want to use in main
 but don't want to clutter up glt.py with"""
 
-# test with:
-# addStudents BIT142 E:\Work\Tech_Research\Git\SampleInputs\Text\StudentList_Short_AllGood.csv
-# deleteClass BIT142
-# addHomework BIT142 Assign_1 E:\Work\Tech_Research\Git\SampleInputs\Git_Repos\A1
-# download BIT142 Assign_1
-# download BIT142 all
 import argparse
 import os.path
 
@@ -389,6 +383,10 @@ def main():
         require_env_option(env, EnvOptions.TEMP_DIR, \
         "You need to specify a temporary directory to read/write to")
 
+        # Make sure the temp dir exists:
+        if not os.path.isdir(env[EnvOptions.TEMP_DIR]):
+            os.makedirs(env[EnvOptions.TEMP_DIR])
+
         require_env_option(env, EnvOptions.SERVER_IP_ADDR, \
         "You need to specify the IP address of the GitLab server")
 
@@ -411,7 +409,7 @@ def main():
             "(or 'all', to download all assignments for this class)")
 
         if env[EnvOptions.HOMEWORK_NAME] == 'all':
-            print "\nAttempting to download homework assignments for " \
+            print "\nAttempting to download all homework assignments for " \
                 + env[EnvOptions.SECTION] + "\n"
         else:
             print "\nAttempting to download all homework assignment " +\
@@ -431,7 +429,16 @@ def main():
 
         glc = connect_to_gitlab(env)
 
-        course_info.download_homework(glc, env)
+        updated_projects = course_info.download_homework(glc, env)
+
+        if not updated_projects:
+            print "No projects have been updated/downloaded"
+        else:
+            import pprint
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(updated_projects)
+            print "="*20
+            print
 
         exit()
 

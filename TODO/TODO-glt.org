@@ -1,4 +1,5 @@
 * NEXT STEPS:
+** New homework: notify students that it was created
 
 ** Figure out how to clone and/or sync all the forked projects for a homework assignment
 
@@ -6,9 +7,17 @@
     CLOSED: [2016-09-14 Wed 01:38]
 *** DONE Which directory to put everything into?
     CLOSED: [2016-09-14 Wed 01:39]
-*** Verify that 'all' will download all assignments
-*** Make sure that we can update existing repos
+*** DONE Verify that 'all' will download all assignments
+    CLOSED: [2016-09-14 Wed 13:55]
+*** DONE Make sure that we can update existing repos
+    CLOSED: [2016-09-14 Wed 10:23]
+*** Figure out how to detect if git pull detected no changes
+    Possibly figure out if the SHA-1 hash that 'head' refers to has changed?
 *** Print out the list of updated assignments
+*** Verify that untracked files in the student dir (such as grading feedback) will NOT be destroyed on update
+from https://www.git-scm.com/docs/git-merge:
+*Warning*: Running git merge with non-trivial uncommitted changes is discouraged: while possible, it may leave you in a state that is hard to back out of in the case of a conflict.
+It looks like things should be fine AS LONG AS the instructor and student don't change each other's files (i.e., as long as there are no merge conflicts)
 ** add a 'clean_temp' function to delete dir & everything in it
 	Always do this at the end of the program
 
@@ -38,12 +47,17 @@
 ** Delete students for a class: DOCUMENT THIS
 
 ** Add homework
+
+** Download homework
 * Needed Tests
 ** Create students for a class: TEST THIS
 ** Delete students for a class: TEST THIS
 ** Add homework
 * Don't forget
-
+** If GLT adds a project but doesn't add that project to the course data file the project is lost - bullet-proof this?
+** Look into Python temp directory?
+   https://docs.python.org/2/library/tempfile.html#tempfile.mkdtemp
+   It looks like this will create a temp dir for me (instead of me having to find a directory to use) but I still have to get rid of it 
 ** Add a 'check environment' option?  
 	This can check for gitlab access, local git installed, ssh keys set up, etc?
 	Could try to create a project on GitLab, then create a local repo, then push/pull?
@@ -103,7 +117,7 @@
    CLOSED: [2016-09-10 Sat 22:30]
 
 ** DONE: Iron out IP issue with Cascadia
-** Create students: Go back and add them to any assignments that have been created for the course
+** DONE: Create students: Go back and add them to any assignments that have been created for the course
 ** DONE: Input files: lastname, firstname - STILL A BUG??
 ** DONE: double check that students can sign themselves out of a group
 	YEP, THEY SURE CAN

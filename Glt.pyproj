@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>download BIT142 Assign_1</CommandLineArguments>
+    <CommandLineArguments>download BIT142 all</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -36,7 +36,6 @@
     <Content Include="README.md" />
     <Content Include="SampleInputs\Git_Repos\A1\File.txt" />
     <Content Include="TODO\Approach.org" />
-    <Content Include="TODO\Emacs.org" />
     <Content Include="TODO\orgcard.pdf" />
     <Content Include="SampleInputs\HTML\class_roster.html" />
     <Content Include="SampleInputs\HTML\Instructor Briefcase.html" />
@@ -48,7 +47,6 @@
     <Content Include="SampleInputs\HTML\Instructor Briefcase_files\waci110.html" />
     <Content Include="SampleInputs\Text\StudentList_Short.csv" />
     <Content Include="SampleInputs\Text\StudentList_Singleton.csv" />
-    <Content Include="TODO\Approach.txt.otl" />
     <Content Include="TODO\TODO-glt.org" />
   </ItemGroup>
   <ItemGroup>

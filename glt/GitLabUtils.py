@@ -101,10 +101,6 @@ def list_projects(glc):
     """ List all the projects in the GitLabServer """
 
     projects = glc.projects.all()
-    #projects =  glc.projects.list()
-    #projects =  glc.projects.search('forked-from-project.id=44')
-    #projects =  glc.projects.search('id=45')
-    #projects =  glc.projects.search(search='45')
 
     if not projects: # if projects list is empty
         print "No projects present"
@@ -112,8 +108,13 @@ def list_projects(glc):
 
     print "Found the following projects:\n"
     for project in projects:
-        print project.name + " ID: " + str(project.id)
+        print project.name_with_namespace + " ID: " + str(project.id)
 
+    return
+
+    print "Project Details:\n"
+    for project in projects:
+        print project.name_with_namespace + " ID: " + str(project.id)
         if hasattr(project, 'forked_from_project') and \
             project.forked_from_project['id'] == 44:
             print "THIS IS A FORKED PROJECT"

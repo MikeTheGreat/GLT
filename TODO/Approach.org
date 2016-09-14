@@ -15,12 +15,7 @@ You could also turn on GitLab CI for automatic evualuation of the assignment. Th
   :FutureIdeas:
 If you had a long running project that went the length of a class (ie a webapp, start with a home page, add shopping cart, add this, add that), then you could also automaticlaly assign new assignments by creating an issue in the project for each repository in the group (through the API). So maybe the base repo everyone forks from is an empty Rails project or something. Then you could add an issue against everyone's forks to add a model that creates these tables in the database. Add another issue to setup user login, etc.
   :END:
-** Idea 2
-**** subtopic
-***** asdfsdf
-** Idea 3
-**** subtopic
-***** asdfsdf
+
 
 * Create student accounts workflow:
   Read in a file of students, and create an account for each one
@@ -30,7 +25,6 @@ If you had a long running project that went the length of a class (ie a webapp, 
 	
 	'Known good' account list will be used in all workflows below this point
 
-** TODO Go back and add the new student to all assignments (projects) for this course
 * Delete student accounts workflow:
 	Read in the known good account list for the specified section
 	Delete all user accounts for that section
@@ -79,20 +73,28 @@ If you had a long running project that went the length of a class (ie a webapp, 
 
 * Grading (Retrieve Student Work) workflow:
 	Use the API to get a list of all projects, filter that list for only items that match the project name
-	   (use Python's filter function?)
 	For each student project on GitLab:
-	   Allow the administrator account access to the project (so we can push to it later)(TODO: Do we need to do this?)
 	   Within the assignment sub-dir, create a local sub-sub-dir for that student student (ST-style)
 	   Do a local clone into that dir (or if it exists then pull in order to 'freshen' it)
 		   Build a list of things that need to be updated based on whether the student last committed to it or I did
-
 * Grading (Send Feedback To Students) workflow:
 	As I grade, leave feedback files in the local repos
 	Run a script which will iterate through all the local repos:
 		Add all files there (i.e., the feedback file) and commit
 		Tag the commit as the "initial version"
-		Push the commit to the server
+		Push the commit to the server (make this optional?  And other steps idempotent?)
 	Post an announcement through ST/Canvas telling everyone to go get their feedback
+	    (Could I auto-email everyone?)
+
+* Get grading list
+  Produce lists of student projects for which:
+  1. There's no grade feedback (it's ungraded)
+  2. There's feedback, but the students have updated it since the feedback was last saved
+  3. There's grade feedabck on the most recent work from the students
+
+* GitDo
+  glt gitdo section assignment "command"
+  execute "command" for all the currently existing git repo's in section/assignment
 
 * Revising Student Work workflow:
 	Student keeps working in the same repo

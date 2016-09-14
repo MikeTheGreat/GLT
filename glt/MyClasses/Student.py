@@ -8,10 +8,10 @@ class Student(object):
     def __init__(self, f_name=None, l_name=None, email=None, glid=-1, **kwargs):
         """constructor.  Given first name, last name, and email address.
         email may be empty"""
+        self.email = email
         if not kwargs:
             self.first_name = f_name
             self.last_name = l_name
-            self.email = email
             self.glid = glid
         else:
             self.glid = kwargs.get('id')
@@ -22,7 +22,7 @@ class Student(object):
         """converts to string, in the format "Last, First, Email, GitLab-ID"""
         # Note that self.email may be empty.  This is ok - it'll make deserializing it easier.
         return self.last_name + ", " + self.first_name + ", " \
-            + self.email + ", " + str(self.glid)
+            + str(self.email) + ", " + str(self.glid)
 
     def __repr__(self):
         """Converts to string, just like __str__"""

@@ -16,7 +16,7 @@ from glt.PrintUtils import print_error
 
 # """This exists to hold an assignment & it's GitLab ID"""
 HomeworkDesc = collections.namedtuple('HomeworkDesc', \
-    ['name', 'id'])
+    ['name', 'internal_name', 'id'])
 
 # """This exists to hold the info relevant to a recently 
 # downloaded/updated student project"""
@@ -27,11 +27,27 @@ def call_git(cmd):
     """Invokes git in a command-line shell"""
     print '\nAbout to do:\n\t' + cmd + '\n'
     ret = subprocess.call(cmd.split(), shell=True)
-    if ret < 0:
-        print_error("Could not execute '"+cmd+"'")
+    if ret != 0:
+        print_error("Problem executing '"+cmd+"'\n\tReturn code:"+str(ret))
         exit()
     else:
         print '\nGit Command:\n\t' + cmd + ' - SUCCEEDED\n'
+
+def git_clone_repo(ip_addr, project, dest_dir):
+    # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
+    # The VM thinks it's servername is "ubuntu".  By using
+    # the environment's server IP addr setting we can get around this.
+
+    ssh_str = "git@" + ip_addr +":"+ project.path_with_namespace+".git"
+        
+    cwd_prev = os.getcwd()
+    os.chdir(dest_dir)
+        
+    # clone the newly-created project locally using 
+    # normal command-line git tools
+    call_git("git clone " + ssh_str)
+        
+    os.chdir(cwd_prev)
 
 def rmtree_remove_readonly_files(func, path, exc_info):
     """
@@ -99,10 +115,10 @@ class CourseInfo(object):
                 if sz_assignment != "":
                     chunks = sz_assignment.split(",")
                     i = 0
-                    while i < len(chunks)/2:
+                    while i < len(chunks):
                         self.assignments.append( \
-                            HomeworkDesc(chunks[i], int(chunks[i+1])))
-                        i += 2
+                            HomeworkDesc(chunks[i],chunks[i+1],int(chunks[i+2])))
+                        i += 3
 
             elif next_line == "Roster":
                 self.roster = read_student_list_csv(input_file, \
@@ -118,7 +134,7 @@ class CourseInfo(object):
             f_out.write("Assignments\n")
 
             for assign in self.assignments:
-                f_out.write(assign.name+","+str(assign.id))
+                f_out.write(assign.name+","+assign.internal_name+","+str(assign.id))
             f_out.write("\n")
 
             f_out.write("Roster\n")
@@ -162,7 +178,6 @@ class CourseInfo(object):
         by creating a project in the GitLab server,
         adding a record of the assignment to the course data file,
         and giving all current students access to the project"""
-
         proj_name = self.homework_to_project_name( \
             env[EnvOptions.HOMEWORK_NAME])
 
@@ -188,7 +203,8 @@ class CourseInfo(object):
             # Remember that we created the assignment
             # This will be serialized to disk (in the section's data file)
             # at the end of this command
-            self.assignments.append(HomeworkDesc(proj_name, project.id))
+            self.assignments.append(HomeworkDesc(env[EnvOptions.HOMEWORK_NAME], \
+                proj_name, project.id))
             self.assignments.sort()
 
         except gitlab.exceptions.GitlabCreateError as exc:
@@ -216,58 +232,50 @@ class CourseInfo(object):
                 print_error('ERROR: Unable to add ' + student.first_name + \
                             " " + student.last_name)
 
-        # This is the part where we add the local, 'starter' repo to the
-        # GitLab repo.
-        # This should be idempotent:
-        # If you already have a GitLab repo, and...
-        # 1)    If the local, starter repo and the GitLab repo are the
-        #       same then no changes will be made to the GitLab repo
-        # 2)    If the local, starter repo is different from the GitLab
-        #       repo  then we'll update the existing GitLab repo
-
-        # The ssh connection string should look like:
-        #   git@ubuntu:root/bit142_assign_1.git
-        ssh_str = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
-        # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
-        # The VM thinks it's servername is "ubuntu".  By using
-        # the environment's server IP addr setting we can get around this.
-        print "About to clone from: " + ssh_str
-
         cwd_prev = os.getcwd()
-        os.chdir(env[EnvOptions.TEMP_DIR])
-        starter_project_name = "STARTER"
+        dest_dir = os.path.join(env[EnvOptions.TEMP_DIR], project.name)
+        try:
+            # This is the part where we add the local, 'starter' repo to the
+            # GitLab repo.
+            # This should be idempotent:
+            # If you already have a GitLab repo, and...
+            # 1)    If the local, starter repo and the GitLab repo are the
+            #       same then no changes will be made to the GitLab repo
+            # 2)    If the local, starter repo is different from the GitLab
+            #       repo  then we'll update the existing GitLab repo
 
-        # clone the newly-created project locally
-        # so that we can use normal command-line git tools here
-        #
-        call_git("git clone " + ssh_str)
+            git_clone_repo(env[EnvOptions.SERVER_IP_ADDR],\
+                project, env[EnvOptions.TEMP_DIR])
 
-        # next, move into the directory
-        # (so that subsequent commands affect the new repo)
-        os.chdir(env[EnvOptions.TEMP_DIR]+os.path.sep+project.name)
+            starter_project_name = "STARTER"
 
-		# Next, add a 'remote' reference in the newly-cloned repo
-		#       to the starter project on our local machine:
-        call_git("git remote add "+starter_project_name+" "\
-            +env[EnvOptions.HOMEWORK_DIR])
+            # next, move into the directory
+            # (so that subsequent commands affect the new repo)            
+            os.chdir(dest_dir)
+            # TODO: Above line should be os.path.join
+		    # Next, add a 'remote' reference in the newly-cloned repo
+		    #       to the starter project on our local machine:
+            call_git("git remote add "+starter_project_name+" "\
+                +env[EnvOptions.HOMEWORK_DIR])
 
-        # Get all the files from the starter project:
-        call_git("git fetch " + starter_project_name)
+            # Get all the files from the starter project:
+            call_git("git fetch " + starter_project_name)
 
-        # Merge the starter files into our new project:
-        call_git("git merge "+starter_project_name+"/master")
+            # Merge the starter files into our new project:
+            call_git("git merge "+starter_project_name+"/master")
 
-        # Clean up (remove) the remove reference
-        # TODO: Do we actually need to do this? Refs don't get pushed,
-        #       and we delete the whole thing in the next step...
-        call_git("git remote remove "+starter_project_name)
+            # Clean up (remove) the remove reference
+            # TODO: Do we actually need to do this? Refs don't get pushed,
+            #       and we delete the whole thing in the next step...
+            call_git("git remote remove "+starter_project_name)
 
-        # Push the changes back up to GitLab
-        call_git("git push")
+            # Push the changes back up to GitLab
+            call_git("git push")
 
-        # Clear the temporary directory
-        os.chdir(cwd_prev)
-        shutil.rmtree(env[EnvOptions.TEMP_DIR]+project.name, onerror=rmtree_remove_readonly_files)
+        finally:
+            # Clear the temporary directory
+            os.chdir(cwd_prev)
+            shutil.rmtree(dest_dir, onerror=rmtree_remove_readonly_files)
 
     def download_homework(self, glc, env):
 
@@ -317,7 +325,7 @@ class CourseInfo(object):
 
         print "Found the following projects:\n"
         for project in projects:
-            print project.name + " ID: " + str(project.id)
+            print project.name_with_namespace + " ID: " + str(project.id)
 
             # See if the project matches any of the
             # 1/many projects that we're trying to download
@@ -335,45 +343,55 @@ class CourseInfo(object):
             print "\tProject was forked from " + forked_project.name \
                 + " (ID:"+str(forked_project.id)+")"
 
-            project.pretty_print(1)
-            print "="*20
-            print
+            #project.pretty_print(1)
+            #print "="*20
+            #print
 
             owner_name = project.path_with_namespace.split('/')[0]
             student = Student(username=owner_name, id=project.owner.id)
 
             # make a dir for this particular project
             student_dest_dir = os.path.join(dest_dir, \
-                env[EnvOptions.HOMEWORK_NAME], \
+                forked_project.name, \
                 student.get_dir_name())
-            if not os.path.isdir(dest_dir):
+            if not os.path.isdir(student_dest_dir):
                 os.makedirs(student_dest_dir)
+            else:
+                # if there's already a .git repo there then refresh (pull) it 
+                # instead of cloning it
 
+                repo_exists = False
+                for root, dirs, files in os.walk(student_dest_dir):
+                    for dir in dirs:
+                        if dir == '.git':
+                            git_dir = os.path.join( root, dir)
+                            print "Found an existing repo at " + git_dir
+                            cwd_prev = os.getcwd()
+                            os.chdir(root)
+            
+                            # Update the repo
+                            call_git("git pull")
+
+                            os.chdir(cwd_prev)
+                        
+                            repo_exists = True
+                        if repo_exists: break
+                    if repo_exists: break
+
+                if repo_exists:
+                    continue # don't try to clone it again
+            
             # clone the repo into the project
             # The ssh connection string should look like:
             #   git@ubuntu:root/bit142_assign_1.git
-            ssh_str = "git@" + env[EnvOptions.SERVER_IP_ADDR] +":"+ project.path_with_namespace+".git"
-            # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
-            # The VM thinks it's servername is "ubuntu".  By using
-            # the environment's server IP addr setting we can get around this.
-            print "About to clone from: " + ssh_str
-
-            cwd_prev = os.getcwd()
-            os.chdir(student_dest_dir)
-            
-            # clone the newly-created project locally
-            # so that we can use normal command-line git tools here
-            #
-            call_git("git clone " + ssh_str)
-
-            os.chdir(cwd_prev)
+            git_clone_repo(env[EnvOptions.SERVER_IP_ADDR], \
+                project, student_dest_dir)
 
             # add the repo into the list of updated projects
-            # add ( student, \
-            #       student_dest_dir, \
-            #       project name & id, \
-            #       timestamp =datetime.datetime.now())
             updated_student_projects.append( \
                 StudentHomeworkUpdateDesc(student, \
                           student_dest_dir, project, \
                           datetime.datetime.now()) )
+
+        # return the list of updated projects
+        return updated_student_projects
