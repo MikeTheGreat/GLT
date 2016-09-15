@@ -1,4 +1,8 @@
 * NEXT STEPS:
+** Do all options need section / homework assign?  If so let's factor that out...
+** GradingList
+** Upload feedback
+** GitDo
 ** New homework: notify students that it was created
 
 ** Figure out how to clone and/or sync all the forked projects for a homework assignment

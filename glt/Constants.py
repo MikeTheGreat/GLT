@@ -30,6 +30,15 @@ class EnvOptions(str, Enum):
     # command line option for listing projects
     LIST_PROJECTS = "listProjects"
 
+    UPLOAD_HOMEWORK = "uploadHomework"
+    FEEDBACK_PATTERN = "pattern"
+    DONT_UPLOAD = "local"
+
+    GRADING_LIST = "gradeList"
+
+    GIT_DO = "gitdo"
+    GIT_COMMAND = "gitCommand"
+
     NEW_HOMEWORK = "addHomework"
     HOMEWORK_NAME = 'homework_name'
     HOMEWORK_DIR = 'homework_path'

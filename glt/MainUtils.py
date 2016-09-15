@@ -38,6 +38,19 @@ def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest=EnvOptions.ACTION.value)
 
+    ################ Add Homework ################
+    add_students_parser = subparsers.add_parser(EnvOptions.NEW_HOMEWORK.value, \
+              help="Add a homework assignment to GitLab; allow students to "\
+              "fork it (but not issue pull requests back to it)", \
+              parents=[common_parser])
+    add_students_parser.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    add_students_parser.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+    add_students_parser.add_argument(EnvOptions.HOMEWORK_DIR.value, \
+        help="Specify a path to a directory that contains a Git repo "\
+        "to seed the server with")
+
     ################ Add Students ################
     add_students_parser = subparsers.add_parser(\
         EnvOptions.CREATE_STUDENTS.value, \
@@ -64,19 +77,6 @@ def parse_args():
     delete_class_parser.add_argument(EnvOptions.SECTION.value,\
         help='Name of the course (e.g., bit142)')
 
-    ################ Add Homework ################
-    add_students_parser = subparsers.add_parser(EnvOptions.NEW_HOMEWORK.value, \
-              help="Add a homework assignment to GitLab; allow students to "\
-              "fork it (but not issue pull requests back to it)", \
-              parents=[common_parser])
-    add_students_parser.add_argument(EnvOptions.SECTION.value, \
-        help='Name of the course (e.g., bit142)')
-    add_students_parser.add_argument(EnvOptions.HOMEWORK_NAME.value, \
-        help='Name of the homework assignment (e.g., Assignment_1)')
-    add_students_parser.add_argument(EnvOptions.HOMEWORK_DIR.value, \
-        help="Specify a path to a directory that contains a Git repo "\
-        "to seed the server with")
-
     ################ Download Homework ################
     download_parser = subparsers.add_parser(EnvOptions.DOWNLOAD_HOMEWORK.value, \
               help="Download student homework assignments (git projects)"\
@@ -93,10 +93,57 @@ def parse_args():
         "assignment, and each student's work will be placed in a "\
         "sub-subdirectory with the student's last and first name")
 
+    ################ GitDo ################
+    git_do = subparsers.add_parser(EnvOptions.GIT_DO.value, \
+              help="Run a git command on every assignment (repo) in a directory"\
+              "(Note the directory is specified by the "\
+              + EnvOptions.STUDENT_WORK_DIR + \
+              " variable in the .gltrc file)." \
+              "  Example: \"glt gitdo BIT142 Assign_1 status\" "\
+              "will run the 'git status' command on each repo in "\
+              "BIT142's 'Assign_1' directory",
+              parents=[common_parser])
+    git_do.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    git_do.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+    git_do.add_argument(EnvOptions.GIT_COMMAND.value, \
+        nargs=argparse.REMAINDER, \
+        help='The rest of the line is the git command to run')
+    
+    ################ Get Grading List ################
+    grading_list = subparsers.add_parser(EnvOptions.GRADING_LIST.value, \
+              help="Get lists indicating which assignments don't have feedback"\
+              ", which have feedback but have been modified since then, and "\
+              "which have been graded and are unchanged",
+              parents=[common_parser])
+    grading_list.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    grading_list.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+
     ################ List Projects ################
     subparsers.add_parser(EnvOptions.LIST_PROJECTS.value,\
        help='List all projects" \
         " on the server', parents=[common_parser])
+
+    ################ Upload Feedback ################
+    upload_feedback = subparsers.add_parser(EnvOptions.UPLOAD_HOMEWORK.value, \
+              help="Commit feedback files that match a pattern and upload" \
+              " them to the GitLab server",
+              parents=[common_parser])
+    upload_feedback.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    upload_feedback.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+    upload_feedback.add_argument('-t', '--'+(EnvOptions.FEEDBACK_PATTERN.value), \
+        help="Specify a regex pattern to match for feedback files."\
+        "If omitted the default is case-insensitive \"grade\" (without " \
+        "the quotes)" )
+    upload_feedback.add_argument('-l', '--'+(EnvOptions.DONT_UPLOAD.value), \
+        help="If specified then add & commit the files but DO NOT upload "\
+        "to GitLab server.  Run this command again later without this "\
+        " option to upload the feedback")
 
     ### Actually do the parsing:
     args = parser.parse_args()
@@ -440,6 +487,71 @@ def main():
             print "="*20
             print
 
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.GIT_DO:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory containing the student projects")
+
+        require_env_option(env, EnvOptions.GIT_COMMAND, \
+            "You must specify a git command to execute")
+        
+        if course_info is None:
+            print Fore.RED + Style.BRIGHT
+            print "Could not find the data file for this section " \
+                "(expected to find it at " + get_data_file_path(env) + ")"
+            print Style.RESET_ALL
+            exit()
+
+        glc = connect_to_gitlab(env)
+                
+        course_info.git_do(glc, env)
+
+        print 'THIS IS NOT IMPLEMENTED YET'
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        print 'THIS IS NOT IMPLEMENTED YET'
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_HOMEWORK:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        #EnvOptions.FEEDBACK_PATTERN
+        #help="Specify a regex pattern to match for feedback files."\
+        #"If omitted the default is case-insensitive \"grade\" (without " \
+        #"the quotes)" )
+        #EnvOptions.DONT_UPLOAD
+        #help="If specified then add & commit the files but DO NOT upload "\
+        #"to GitLab server.  Run this command again later without this "\
+        #" option to upload the feedback")
+
+        print 'THIS IS NOT IMPLEMENTED YET'
         exit()
 
     elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:

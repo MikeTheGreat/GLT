@@ -8,6 +8,9 @@ import shutil
 import subprocess
 import gitlab
 
+from colorama import Fore, Style, init # Back,
+init()
+
 from glt.MyClasses.Student import Student
 from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
@@ -395,3 +398,37 @@ class CourseInfo(object):
 
         # return the list of updated projects
         return updated_student_projects
+
+    def git_do(self, glc, env):
+        """"Search through the directory rooted at ev[STUDENT_WORK_DIR]
+        for any git repos in/under that directory.  For each one, 
+        invoke the command on every single git repo"""
+        git_cmd = " ".join(env[EnvOptions.GIT_COMMAND])
+        git_cmd = "git " + git_cmd
+
+        root_dir = env[EnvOptions.STUDENT_WORK_DIR]
+        print "Searching " + root_dir + "\n"
+
+        cwd_prev = os.getcwd()
+
+        for current_dir, dirs, files in os.walk(root_dir):
+            for dir in dirs:
+                if dir == ".git":
+                    os.chdir(current_dir)
+
+                    # make the directory more readable by truncating
+                    # the common root
+                    local_dir = current_dir.replace(root_dir, "")
+                    print Fore.LIGHTGREEN_EX + Style.BRIGHT
+                    print "Found repo at " + local_dir + "\n"
+                    print Style.RESET_ALL
+
+                    call_git(git_cmd)
+
+                    print "="*20 + "\n"
+
+                    # note that we don't restore the current
+                    # working dir between git commands!
+
+        os.chdir(cwd_prev)
+        
