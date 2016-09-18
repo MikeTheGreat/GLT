@@ -5,7 +5,7 @@ import argparse
 import os.path
 
 import rcfile
-from colorama import Fore, Style, init # Back,
+from colorama import Fore, Style, init, Back
 init()
 
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
@@ -17,7 +17,8 @@ from glt.GitLabUtils import connect_to_gitlab, create_student_accounts,\
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
-from glt.PrintUtils import require_env_option, print_error
+from glt.PrintUtils import require_variable, require_env_option
+from glt.GitDoUtils import generate_add_feedback, grade_list_collector
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -93,6 +94,52 @@ def parse_args():
         "assignment, and each student's work will be placed in a "\
         "sub-subdirectory with the student's last and first name")
 
+    ################ Commit Feedback ################
+    upload_feedback = subparsers.add_parser(EnvOptions.COMMIT_FEEDBACK.value, \
+              help="Commit feedback files that match a pattern, and tag the commit",
+              parents=[common_parser])
+    upload_feedback.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    upload_feedback.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+    upload_feedback.add_argument('-a', '--'+(EnvOptions.FEEDBACK_PATTERN.value), \
+        help="Specify a regex pattern to match for feedback files."\
+        "If omitted the default is case-insensitive \""+\
+        EnvOptions.FEEDBACK_PATTERN_DEFAULT +"\" (without " \
+        "the quotes)" )
+    upload_feedback.add_argument('-t', '--'+(EnvOptions.GIT_TAG.value), \
+        help="Specify a string to use as a tag for this version (default is "
+        "\""+EnvOptions.GIT_TAG_DEFAULT.value+"\")" )
+
+    ################ Get Grading List ################
+    grading_list = subparsers.add_parser(EnvOptions.GRADING_LIST.value, \
+              help="Get lists indicating which assignments don't have feedback"\
+              ", which have feedback but have been modified since then, and "\
+              "which have been graded and are unchanged",
+              parents=[common_parser])
+    grading_list.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    grading_list.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+
+    ################ Upload Feedback ################
+    upload_feedback = subparsers.add_parser(EnvOptions.UPLOAD_FEEDBACK.value, \
+              help="Upload student repo (including instructor feedback) " \
+              " to the GitLab server",
+              parents=[common_parser])
+    upload_feedback.add_argument(EnvOptions.SECTION.value, \
+        help='Name of the course (e.g., bit142)')
+    upload_feedback.add_argument(EnvOptions.HOMEWORK_NAME.value, \
+        help='Name of the homework assignment (e.g., Assignment_1)')
+    upload_feedback.add_argument('-a', '--'+(EnvOptions.FEEDBACK_PATTERN.value), \
+        help="Specify a regex pattern to match for feedback files."\
+        "If omitted the default is case-insensitive \""+\
+        EnvOptions.FEEDBACK_PATTERN_DEFAULT +"\" (without " \
+        "the quotes)" )
+    upload_feedback.add_argument('-t', '--'+(EnvOptions.GIT_TAG.value), \
+        help="Specify a string to use as a tag for this version (default is "
+        "\""+EnvOptions.GIT_TAG_DEFAULT.value+"\")" )
+
     ################ GitDo ################
     git_do = subparsers.add_parser(EnvOptions.GIT_DO.value, \
               help="Run a git command on every assignment (repo) in a directory"\
@@ -110,40 +157,11 @@ def parse_args():
     git_do.add_argument(EnvOptions.GIT_COMMAND.value, \
         nargs=argparse.REMAINDER, \
         help='The rest of the line is the git command to run')
-    
-    ################ Get Grading List ################
-    grading_list = subparsers.add_parser(EnvOptions.GRADING_LIST.value, \
-              help="Get lists indicating which assignments don't have feedback"\
-              ", which have feedback but have been modified since then, and "\
-              "which have been graded and are unchanged",
-              parents=[common_parser])
-    grading_list.add_argument(EnvOptions.SECTION.value, \
-        help='Name of the course (e.g., bit142)')
-    grading_list.add_argument(EnvOptions.HOMEWORK_NAME.value, \
-        help='Name of the homework assignment (e.g., Assignment_1)')
 
     ################ List Projects ################
     subparsers.add_parser(EnvOptions.LIST_PROJECTS.value,\
-       help='List all projects" \
-        " on the server', parents=[common_parser])
-
-    ################ Upload Feedback ################
-    upload_feedback = subparsers.add_parser(EnvOptions.UPLOAD_HOMEWORK.value, \
-              help="Commit feedback files that match a pattern and upload" \
-              " them to the GitLab server",
-              parents=[common_parser])
-    upload_feedback.add_argument(EnvOptions.SECTION.value, \
-        help='Name of the course (e.g., bit142)')
-    upload_feedback.add_argument(EnvOptions.HOMEWORK_NAME.value, \
-        help='Name of the homework assignment (e.g., Assignment_1)')
-    upload_feedback.add_argument('-t', '--'+(EnvOptions.FEEDBACK_PATTERN.value), \
-        help="Specify a regex pattern to match for feedback files."\
-        "If omitted the default is case-insensitive \"grade\" (without " \
-        "the quotes)" )
-    upload_feedback.add_argument('-l', '--'+(EnvOptions.DONT_UPLOAD.value), \
-        help="If specified then add & commit the files but DO NOT upload "\
-        "to GitLab server.  Run this command again later without this "\
-        " option to upload the feedback")
+       help='List all projects' \
+        ' on the server', parents=[common_parser])
 
     ### Actually do the parsing:
     args = parser.parse_args()
@@ -223,7 +241,8 @@ def load_environment():
 def get_data_file_path(env):
     """Assumes that DATA_DIR and SECTION are defined,
     returns data file for this section"""
-    return env[EnvOptions.DATA_DIR] + os.sep + env[EnvOptions.SECTION] + ".txt"
+    return os.path.join( env[EnvOptions.DATA_DIR], \
+        env[EnvOptions.SECTION] + ".txt")
 
 def load_student_list(env):
     """Loads student account information into a StudentCollection's
@@ -316,12 +335,9 @@ def main():
             "You need to specify a section (course -e.g., bit142)"\
                " to create all the student accounts!")
 
-        if course_info is None:
-            print Fore.RED + Style.BRIGHT
-            print "Could not find the data file for this section " \
-                "(expected to find it at " + get_data_file_path(env) + ")"
-            print Style.RESET_ALL
-            exit()
+        require_variable(course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
 
         # load_environment already loaded up the known_good_accounts
         # next we need to load in the student list from the .CSV/.HTML/etc:
@@ -383,12 +399,9 @@ def main():
 
         print "\nAttempting to delete student accounts in " + env[EnvOptions.SECTION] + "\n"
 
-        if course_info is None:
-            print Fore.RED + Style.BRIGHT
-            print "Could not find the data file for this section " \
-                "(expected to find it at " + get_data_file_path(env) + ")"
-            print Style.RESET_ALL
-            exit()
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
 
         glc = connect_to_gitlab(env)
         delete_accounts_in_class(glc, course_info)
@@ -404,6 +417,85 @@ def main():
         course_info.roster.print_errors()
         exit()
 
+    elif env[EnvOptions.ACTION] == EnvOptions.DOWNLOAD_HOMEWORK:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        if env[EnvOptions.HOMEWORK_NAME] == 'all':
+            print "\nAttempting to download all homework assignments for " \
+                + env[EnvOptions.SECTION] + "\n"
+        else:
+            print "\nAttempting to download all homework assignment \"" +\
+              env[EnvOptions.HOMEWORK_NAME] + "\" for " + \
+              env[EnvOptions.SECTION] + "\n"
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory to download the homework "\
+            "assignment(s) to")
+
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        glc = connect_to_gitlab(env)
+
+        updated_projects = course_info.download_homework(glc, env)
+
+        if not updated_projects:
+            print "No projects have been updated/downloaded"
+        else:
+            print Fore.GREEN + Style.BRIGHT 
+            print "Updated the following projects:"
+            print Style.RESET_ALL
+            for proj in updated_projects:
+                print "\t" + proj.student_dest_dir \
+                    .replace(env[EnvOptions.STUDENT_WORK_DIR], "")
+
+            print "\nThese are all in the base directory of " + \
+                env[EnvOptions.STUDENT_WORK_DIR]
+            print "\n" + "="*20 + "\n"
+
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.GIT_DO:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory containing the student projects")
+
+        require_env_option(env, EnvOptions.GIT_COMMAND, \
+            "You must specify a git command to execute")
+        
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        #glc = connect_to_gitlab(env)
+                
+        course_info.git_do(env)
+
+        exit()
+
+    elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:
+        glc = connect_to_gitlab(env)
+        print 'Listing projects:'
+        list_projects(glc)
+
+        exit()
+
     elif env[EnvOptions.ACTION] == EnvOptions.NEW_HOMEWORK:
 
         require_env_option(env, EnvOptions.SECTION, \
@@ -412,12 +504,9 @@ def main():
 
         print "\nAttempting to create homework assignment for " + env[EnvOptions.SECTION] + "\n"
 
-        if course_info is None:
-            print Fore.RED + Style.BRIGHT
-            print "Could not find the data file for this section " \
-                "(expected to find it at " + get_data_file_path(env) + ")"
-            print Style.RESET_ALL
-            exit()
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
 
         require_env_option(env, EnvOptions.HOMEWORK_NAME, \
         "You need to specify a name for the new homework assignment "\
@@ -444,52 +533,10 @@ def main():
 
         course_info.write_data_file(get_data_file_path(env))
         exit()
-
-    elif env[EnvOptions.ACTION] == EnvOptions.DOWNLOAD_HOMEWORK:
-
-        require_env_option(env, EnvOptions.SECTION, \
-        "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!")
-
-        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
-            "You must specify the name of a homework assignment "\
-            "(or 'all', to download all assignments for this class)")
-
-        if env[EnvOptions.HOMEWORK_NAME] == 'all':
-            print "\nAttempting to download all homework assignments for " \
-                + env[EnvOptions.SECTION] + "\n"
-        else:
-            print "\nAttempting to download all homework assignment " +\
-              env[EnvOptions.HOMEWORK_NAME] + " for " + \
-              env[EnvOptions.SECTION] + "\n"
-
-        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
-            "You must specify the directory to download the homework "\
-            "assignment(s) to")
-
-        if course_info is None:
-            print Fore.RED + Style.BRIGHT
-            print "Could not find the data file for this section " \
-                "(expected to find it at " + get_data_file_path(env) + ")"
-            print Style.RESET_ALL
-            exit()
-
-        glc = connect_to_gitlab(env)
-
-        updated_projects = course_info.download_homework(glc, env)
-
-        if not updated_projects:
-            print "No projects have been updated/downloaded"
-        else:
-            import pprint
-            pp = pprint.PrettyPrinter(indent=4)
-            pp.pprint(updated_projects)
-            print "="*20
-            print
-
-        exit()
-
-    elif env[EnvOptions.ACTION] == EnvOptions.GIT_DO:
+         
+    elif env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK or\
+         env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK or\
+         env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
 
         require_env_option(env, EnvOptions.SECTION, \
         "You need to specify a section (course -e.g., bit142)"\
@@ -502,62 +549,81 @@ def main():
         require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
             "You must specify the directory containing the student projects")
 
-        require_env_option(env, EnvOptions.GIT_COMMAND, \
-            "You must specify a git command to execute")
-        
-        if course_info is None:
-            print Fore.RED + Style.BRIGHT
-            print "Could not find the data file for this section " \
-                "(expected to find it at " + get_data_file_path(env) + ")"
-            print Style.RESET_ALL
-            exit()
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
 
-        glc = connect_to_gitlab(env)
-                
-        course_info.git_do(glc, env)
+        pattern = None
+        if EnvOptions.FEEDBACK_PATTERN in env and \
+            env[EnvOptions.FEEDBACK_PATTERN] is not None:
+            pattern = env[EnvOptions.FEEDBACK_PATTERN]
+        else:
+            pattern = EnvOptions.FEEDBACK_PATTERN_DEFAULT.value
 
-        print 'THIS IS NOT IMPLEMENTED YET'
-        exit()
+		#Tag the commit so we can look it up again later if needed.
+        tag = None
+        if EnvOptions.GIT_TAG in env and \
+            env[EnvOptions.GIT_TAG] is not None:
+            tag = env[EnvOptions.GIT_TAG]
+        else:
+            tag = EnvOptions.GIT_TAG_DEFAULT
 
-    elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+        commands = list()
+        assign_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
+            env[EnvOptions.SECTION],
+            env[EnvOptions.HOMEWORK_NAME])
 
-        require_env_option(env, EnvOptions.SECTION, \
-        "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!")
+        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
+            # First, add the instructor's feedback (based on the 
+            # provided pattern, or the default is no pattern is given)
+            # and then commit it to the local repo
+            commands.append(generate_add_feedback(pattern, assign_dir))
 
-        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
-            "You must specify the name of a homework assignment "\
-            "(or 'all', to download all assignments for this class)")
+            commands.append("git tag -a " + tag + " -m INSTRUCTOR_FEEDBACK_ADDED")
 
-        print 'THIS IS NOT IMPLEMENTED YET'
-        exit()
+        elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
+            # upload the results back to the server 
+            # unless DONT_UPLOAD is defined 
+            # (in which case, skip this step)
+            commands.append( "git push" )
+            # the tags don't automatically upload, so push them separately:
+            commands.append ("git push origin --tags")
 
-    elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_HOMEWORK:
+        elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
 
-        require_env_option(env, EnvOptions.SECTION, \
-        "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!")
+            grading_list = grade_list_collector ()
+            grading_list_collector = grading_list.generate_grading_list_collector(tag)
+            commands.append(grading_list_collector)
 
-        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
-            "You must specify the name of a homework assignment "\
-            "(or 'all', to download all assignments for this class)")
+        course_info.git_do_core(assign_dir, commands )
 
-        #EnvOptions.FEEDBACK_PATTERN
-        #help="Specify a regex pattern to match for feedback files."\
-        #"If omitted the default is case-insensitive \"grade\" (without " \
-        #"the quotes)" )
-        #EnvOptions.DONT_UPLOAD
-        #help="If specified then add & commit the files but DO NOT upload "\
-        #"to GitLab server.  Run this command again later without this "\
-        #" option to upload the feedback")
+        if env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+            if grading_list.new_student_work_since_grading:
+                print Fore.YELLOW + Style.BRIGHT
+                print "The following items have been re-submitted by students since grading:\n"
+                print Style.RESET_ALL
 
-        print 'THIS IS NOT IMPLEMENTED YET'
-        exit()
+                for item in grading_list.new_student_work_since_grading:
+                    print "\t" + item.replace(assign_dir, "")
+                print "\n" + "="*20 + "\n"
 
-    elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:
-        glc = connect_to_gitlab(env)
-        print 'Listing projects:'
-        list_projects(glc)
+            if grading_list.ungraded:
+                print Fore.GREEN + Style.BRIGHT
+                print "The following items haven't been graded yet:\n"
+                print Style.RESET_ALL
+
+                for item in grading_list.ungraded:
+                    print "\t" + item.replace(assign_dir, "")
+                print "\n" + "="*20 + "\n"
+
+            if grading_list.graded:
+                print Fore.WHITE + Style.BRIGHT
+                print "The following items have been graded:\n"
+                print Style.RESET_ALL
+
+                for item in grading_list.graded:
+                    print "\t" + item.replace(assign_dir, "")
+                print "\n" + "="*20 + "\n"
 
         exit()
 

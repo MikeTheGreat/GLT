@@ -1,8 +1,18 @@
 * NEXT STEPS:
-** Do all options need section / homework assign?  If so let's factor that out...
+
+** DONE GitDo
+   CLOSED: [2016-09-15 Thu 22:21]
 ** GradingList
 ** Upload feedback
-** GitDo
+*** How to make this idempotent? SPLIT THIS INTO TWO COMMANDS - COMMIT FEEDBACK AND UPLOAD FEEDBACK
+    Specifically, how to let instructors check in & tag stuff, then later on upload it?
+    (Can I have call_shell continue on error (instead of exiting?))
+*** Verify that students can't permenantly destroy feedback
+**** (i.e., even if deleted it will remain in the project's history)
+**** Verify that this will be true even if git-gc is run after deleting the file
+*** FAQ about telling students not to delete the GLT tags (which they /will/ be able to do)
+
+** HomeworkDescs aren't being sorted correctly, are they (no comparison method?)
 ** New homework: notify students that it was created
 
 ** Figure out how to clone and/or sync all the forked projects for a homework assignment
@@ -25,8 +35,6 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 ** add a 'clean_temp' function to delete dir & everything in it
 	Always do this at the end of the program
 
-** HomeworkDescs aren't being sorted correctly, are they (no comparison method?)
-
 ** Delete students' projects when deleting their acounts
 	TODO: Figure out how this could even work - how do we find their projects?
 		Projects appear to have a 'forked from' field somewhere.  We could keep the ID of the original project
@@ -35,10 +43,20 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 
 ** Move GitLabUtils into CourseInfo object
 
+** argparse can't group subparsers - create help description that groups them instead?
+http://stackoverflow.com/questions/32017020/grouping-argparse-subparser-arguments
 
-** 'GitDo' command structure?
+* Polish
 
+** For a lot of the download,commit,upload stuff: it's very verbose
 
+*** Capture stdout (via popen & communicate) & eat it?
+
+*** Consistently build lists of stuff that worked & present them to the user
+
+*** call_shell shouldn't produce output unless it needs to
+
+** grep for os.sep & replace with os.path.join
 * Needed docs
 ** DOCUMENT: How to connect to GitLab server via ssh
    (in glt_install.md)
@@ -53,11 +71,18 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 ** Add homework
 
 ** Download homework
+** Commit feedback
+*** Specifically, this should be done before calling download homework again
+** Upload Feedback
+** GradingList
+** GitDo
+   
 * Needed Tests
 ** Create students for a class: TEST THIS
 ** Delete students for a class: TEST THIS
 ** Add homework
 * Don't forget
+** Do all options need section / homework assign?  If so let's factor that out...
 ** If GLT adds a project but doesn't add that project to the course data file the project is lost - bullet-proof this?
 ** Look into Python temp directory?
    https://docs.python.org/2/library/tempfile.html#tempfile.mkdtemp
@@ -79,7 +104,10 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 ** Kanban cards?
 
 ** Ansible/Chef for setting up the server?
-
+** Setting up GitLab
+*** Email sending - SendGrid
+*** TimeZone
+https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
 ** Setup Azure
 	Modify to use SendGrid
 	Pre-configured VMs: https://about.gitlab.com/2016/07/13/how-to-setup-a-gitlab-instance-on-microsoft-azure/?utm_medium=email&utm_source=marketo&utm_campaign=release+newsletter&utm_content=july+22+2016&mkt_tok=eyJpIjoiTnpBM01EY3lOekkzWW1NMiIsInQiOiJiR2pZNmk1MCtZOVYrTjVpN2xISTBaeUZEaXczSnI3VFZqVUxkM1hPVUlUSFhHVHl6TnpXSVlxYUZPYzN0OU12OXpHeGtwS3FIaTdKeHZLd2QxXC9UZEcrT08xcHVOQ2dpREM3MVNpNlNKSDQ9In0%3D
@@ -93,6 +121,10 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 	Ansible/Chef recipe?
  
 ** Create a forum for people to ask questions about GLT?
+
+** Possibly use pygit2, or dulwich, or python-git instead of parsing command-line git calls?
+
+*** https://www.dulwich.io/docs/tutorial/repo.html
 
 * Finished
 ** DONE Figure out how the projects are linked

@@ -26,7 +26,7 @@ HomeworkDesc = collections.namedtuple('HomeworkDesc', \
 StudentHomeworkUpdateDesc = collections.namedtuple('StudentHomeworkUpdateDesc', \
     ['student', 'student_dest_dir', 'project', 'timestamp'])
 
-def call_git(cmd):
+def call_shell(cmd):
     """Invokes git in a command-line shell"""
     print '\nAbout to do:\n\t' + cmd + '\n'
     ret = subprocess.call(cmd.split(), shell=True)
@@ -48,7 +48,7 @@ def git_clone_repo(ip_addr, project, dest_dir):
         
     # clone the newly-created project locally using 
     # normal command-line git tools
-    call_git("git clone " + ssh_str)
+    call_shell("git clone " + ssh_str)
         
     os.chdir(cwd_prev)
 
@@ -258,22 +258,22 @@ class CourseInfo(object):
             # TODO: Above line should be os.path.join
 		    # Next, add a 'remote' reference in the newly-cloned repo
 		    #       to the starter project on our local machine:
-            call_git("git remote add "+starter_project_name+" "\
+            call_shell("git remote add "+starter_project_name+" "\
                 +env[EnvOptions.HOMEWORK_DIR])
 
             # Get all the files from the starter project:
-            call_git("git fetch " + starter_project_name)
+            call_shell("git fetch " + starter_project_name)
 
             # Merge the starter files into our new project:
-            call_git("git merge "+starter_project_name+"/master")
+            call_shell("git merge "+starter_project_name+"/master")
 
             # Clean up (remove) the remove reference
             # TODO: Do we actually need to do this? Refs don't get pushed,
             #       and we delete the whole thing in the next step...
-            call_git("git remote remove "+starter_project_name)
+            call_shell("git remote remove "+starter_project_name)
 
             # Push the changes back up to GitLab
-            call_git("git push")
+            call_shell("git push")
 
         finally:
             # Clear the temporary directory
@@ -304,7 +304,8 @@ class CourseInfo(object):
             # we're going to make a new list that should match just one
             # homework assignment
             hw_name = self.homework_to_project_name(env[EnvOptions.HOMEWORK_NAME])
-            hw_to_download = [item for item in self.assignments if item.name == hw_name]
+            hw_to_download = [item for item in self.assignments \
+                if item.name == env[EnvOptions.HOMEWORK_NAME]]
 
         if not hw_to_download:# if list is empty
             print_error( env[EnvOptions.HOMEWORK_NAME] + " (internal name: " +\
@@ -340,7 +341,8 @@ class CourseInfo(object):
                         break
 
             if forked_project is None:
-                print "\tNOT a forked project\n"
+                print "\tNOT a forked project (or not forked from "\
+                    + env[EnvOptions.HOMEWORK_NAME] + ")\n"
                 continue
 
             print "\tProject was forked from " + forked_project.name \
@@ -373,7 +375,7 @@ class CourseInfo(object):
                             os.chdir(root)
             
                             # Update the repo
-                            call_git("git pull")
+                            call_shell("git pull")
 
                             os.chdir(cwd_prev)
                         
@@ -399,7 +401,41 @@ class CourseInfo(object):
         # return the list of updated projects
         return updated_student_projects
 
-    def git_do(self, glc, env):
+    def git_do_core(self, root_dir, git_cmds):
+        """Searches for git repos in & under <root_dir>, and then
+        invokes each of the commands listed in <git_cmds> on the repo."""
+        cwd_prev = os.getcwd()
+        
+        for current_dir, dirs, files in os.walk(root_dir):
+            for dir in dirs:
+                if dir == ".git":
+                    os.chdir(current_dir)
+        
+                    # make the directory more readable by truncating
+                    # the common root
+                    local_dir = current_dir.replace(root_dir, "")
+#                    print Fore.LIGHTGREEN_EX + Style.BRIGHT
+#                    print "Found repo at " + local_dir + "\n"
+#                    print Style.RESET_ALL
+                    
+                    for git_cmd in git_cmds:
+                        if callable(git_cmd):
+                            if not git_cmd():
+                                break # we're done here
+                        elif isinstance(git_cmd, basestring):
+                            call_shell(git_cmd)
+                        else:
+                            print_error( "This is neither a string nor a function:\n\t"\
+                                +str(git_cmd))
+        
+                    #print "="*20 + "\n"
+        
+                    # note that we don't restore the current
+                    # working dir between git commands!
+        
+        os.chdir(cwd_prev)
+
+    def git_do(self, env):
         """"Search through the directory rooted at ev[STUDENT_WORK_DIR]
         for any git repos in/under that directory.  For each one, 
         invoke the command on every single git repo"""
@@ -409,26 +445,5 @@ class CourseInfo(object):
         root_dir = env[EnvOptions.STUDENT_WORK_DIR]
         print "Searching " + root_dir + "\n"
 
-        cwd_prev = os.getcwd()
-
-        for current_dir, dirs, files in os.walk(root_dir):
-            for dir in dirs:
-                if dir == ".git":
-                    os.chdir(current_dir)
-
-                    # make the directory more readable by truncating
-                    # the common root
-                    local_dir = current_dir.replace(root_dir, "")
-                    print Fore.LIGHTGREEN_EX + Style.BRIGHT
-                    print "Found repo at " + local_dir + "\n"
-                    print Style.RESET_ALL
-
-                    call_git(git_cmd)
-
-                    print "="*20 + "\n"
-
-                    # note that we don't restore the current
-                    # working dir between git commands!
-
-        os.chdir(cwd_prev)
+        self.git_do_core(root_dir, [git_cmd] )
         

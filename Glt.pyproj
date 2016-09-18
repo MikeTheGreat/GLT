@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>gitdo BIT142 Assign_1 status</CommandLineArguments>
+    <CommandLineArguments>gradeList BIT142 Assign_1</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -56,9 +56,10 @@
     <Compile Include="glt\GitLabUtils.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="glt\MainUtils.py">
+    <Compile Include="glt\GitDoUtils.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="glt\MainUtils.py" />
     <Compile Include="glt\MyClasses\CourseInfo.py">
       <SubType>Code</SubType>
     </Compile>

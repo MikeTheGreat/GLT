@@ -16,3 +16,6 @@ if __name__ == '__main__':
 # download BIT142 Assign_1
 # addHomework BIT142 Assign_2 E:\Work\Tech_Research\Git\SampleInputs\Git_Repos\A2
 # download BIT142 all
+# <add a YOUR_GRADE.txt file to a repo>
+# commitFeedback BIT142 Assign_1
+# uploadFeedback BIT142 Assign_1

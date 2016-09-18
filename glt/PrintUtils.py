@@ -4,6 +4,15 @@ import sys
 from colorama import Fore, Style, init # Back,
 init()
 
+def require_variable(var, msg):
+    """Verify that <var> is not None
+    Otherwise print out <msg> and exit the program"""
+    if var is None:
+        print Fore.RED + Style.BRIGHT
+        print msg
+        print Style.RESET_ALL
+        exit()
+
 def require_env_option(env, option, msg):
     """Verify that <option> is in <env>.
     Otherwise print out <msg> and exit the program"""
