@@ -2,6 +2,10 @@
     glt.py: GitLab Tool
         Tool to do bulk-manipulation of git repos (using a GitLab server)
 """
+
+from colorama import Fore, Style, init
+init()
+
 from glt.MainUtils import main
 
 from glt.PrintUtils import get_logger

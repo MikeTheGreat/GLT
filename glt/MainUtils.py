@@ -19,6 +19,7 @@ from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
 from glt.PrintUtils import print_color, require_variable, require_env_option
 from glt.GitLocalUtils import generate_add_feedback, grade_list_collector
+from glt.GitDoUtils import upload_list_collector
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -589,11 +590,9 @@ def main():
 
         elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
             # upload the results back to the server 
-            # unless DONT_UPLOAD is defined 
-            # (in which case, skip this step)
-            commands.append( "git push" )
-            # the tags don't automatically upload, so push them separately:
-            commands.append ("git push origin --tags")
+            upload_list = upload_list_collector()
+            upload_collector = upload_list.generate_upload_list_collector()
+            commands.append( upload_collector )
 
         elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
 
@@ -605,6 +604,7 @@ def main():
 
         if env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
             if grading_list.new_student_work_since_grading:
+                # TODO: Refactor this block of code?
                 print_color( Fore.YELLOW, "The following items have been "\
                     "re-submitted by students since grading:\n" )
 
@@ -626,6 +626,28 @@ def main():
                 print Style.RESET_ALL
 
                 for item in grading_list.graded:
+                    print "\t" + item.replace(assign_dir, "")
+                print "\n" + "="*20 + "\n"
+
+        if env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
+            if upload_list.uploaded:
+                print_color( Fore.GREEN, "The following items have been "\
+                    "changed (and committed) locally since downloading them."\
+                    "They've now been uploaded back to the server\n" )
+
+                for item in upload_list.uploaded:
+                    print "\t" + item.replace(assign_dir, "")
+                print "\n" + "="*20 + "\n"
+            else:
+                print_color( Fore.RED, "There were NO repos that were uploaded"\
+                   " to the server (because there were no changes committed)" )
+
+            if upload_list.unchanged:
+                print_color( Fore.YELLOW, "The following items have NOT been "\
+                    "changed locally since downloading them."\
+                    "They were NOT uploaded back to the server" )
+
+                for item in upload_list.unchanged:
                     print "\t" + item.replace(assign_dir, "")
                 print "\n" + "="*20 + "\n"
 

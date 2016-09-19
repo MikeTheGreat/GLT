@@ -126,7 +126,6 @@ class grade_list_collector(object):
 
     def generate_grading_list_collector(self, tag):
         def grading_list_collector():
-#            print "Looking for tag: " + tag            
             p=subprocess.Popen(["git","show", tag],\
                 stderr=subprocess.PIPE,\
                 stdout=subprocess.PIPE)
@@ -139,8 +138,6 @@ class grade_list_collector(object):
             p=subprocess.Popen(["git","show", "head"],\
                 stderr=subprocess.PIPE,\
                 stdout=subprocess.PIPE)
-            # write 'a line\n' to the process
-            #p.stdin.write('a line\n')
 
             sha_head, dt_head = extract_commit_datetime(p)
             p.terminate()
@@ -163,3 +160,44 @@ class grade_list_collector(object):
             return True
 
         return grading_list_collector
+
+class upload_list_collector(object):
+    """A class to collect up the info about which projects were uploaded
+    for the instructor"""
+    def __init__(self):
+        """Set up the empty lists"""
+        self.unchanged = list()
+        self.uploaded = list()
+
+    def generate_upload_list_collector(self):
+        def upload_list_collector():
+       
+            p=subprocess.Popen("git push --progress".split(),\
+                stderr=subprocess.STDOUT,\
+                stdout=subprocess.PIPE,
+                universal_newlines=True)
+            sz_stdout, sz_stderr = p.communicate()
+            p.wait()
+
+            logger.debug("In response to 'git push', got: " + sz_stdout)
+
+            if sz_stdout.find("Everything up-to-date") != -1:
+                self.unchanged.append(os.getcwd() )
+            else:
+                if sz_stdout.find("To git@") == -1:
+                    logger.error("Expected to find \"Writing objects:\" in output but didn't")
+                self.uploaded.append(os.getcwd() )
+
+            # the tags don't automatically upload, 
+            # so push them separately:
+            p=subprocess.Popen("git push origin --tags --progress".split(),\
+                stderr=subprocess.STDOUT,\
+                stdout=subprocess.PIPE,
+                universal_newlines=True)
+            sz_stdout, sz_stderr = p.communicate()
+            p.wait()
+
+            logger.debug("In response to 'git push origin --tags', got: " + sz_stdout)
+            return True
+
+        return upload_list_collector

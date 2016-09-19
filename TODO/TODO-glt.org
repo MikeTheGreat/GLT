@@ -1,15 +1,7 @@
 * NEXT STEPS:
 
-** For a lot of the download,commit,upload stuff: it's very verbose
-*** DONE Use standard pythong logging instead of my own stuff :/
-    CLOSED: [2016-09-18 Sun 22:10]
-*** DONE Capture stdout (via popen & communicate) & eat it?
-    CLOSED: [2016-09-18 Sun 22:10]
-*** Consistently build lists of stuff that worked & present them to the user - UPLOAD
-*** DONE call_shell shouldn't produce output unless it needs to
-    CLOSED: [2016-09-18 Sun 22:11]
 ** commitFeedback
-*** Figure out to avoid re-committing feedback if it's already there
+*** Figure out to avoid re-committing feedback if it's already there (getting error messages because the tag already exists)
 ** gradeList - add 'all' option?
 ** Go through this file, clean it up & figure out next steps
 ** Upload feedback
@@ -133,6 +125,16 @@ https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
 *** https://www.dulwich.io/docs/tutorial/repo.html
 
 * Finished
+** DONE For a lot of the download,commit,upload stuff: it's very verbose
+   CLOSED: [2016-09-19 Mon 00:54]
+*** DONE Use standard pythong logging instead of my own stuff :/
+    CLOSED: [2016-09-18 Sun 22:10]
+*** DONE Capture stdout (via popen & communicate) & eat it?
+    CLOSED: [2016-09-18 Sun 22:10]
+*** DONE Consistently build lists of stuff that worked & present them to the user - UPLOAD
+    CLOSED: [2016-09-19 Mon 00:53]
+*** DONE call_shell shouldn't produce output unless it needs to
+    CLOSED: [2016-09-18 Sun 22:11]
 ** DONE GradingList
    CLOSED: [2016-09-18 Sun 22:33]
 

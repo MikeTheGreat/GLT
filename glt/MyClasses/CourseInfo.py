@@ -379,6 +379,7 @@ class CourseInfo(object):
     def git_do_core(self, root_dir, git_cmds):
         """Searches for git repos in & under <root_dir>, and then
         invokes each of the commands listed in <git_cmds> on the repo."""
+        logger.info( "Walking through " + root_dir)
         cwd_prev = os.getcwd()
         
         for current_dir, dirs, files in os.walk(root_dir):
@@ -389,7 +390,8 @@ class CourseInfo(object):
                     # make the directory more readable by truncating
                     # the common root
                     local_dir = current_dir.replace(root_dir, "")
-#                    print_color( Fore.LIGHTGREEN_EX, "Found repo at " + local_dir + "\n")
+                    logger.info( Fore.LIGHTGREEN_EX + "Found repo at "\
+                        + local_dir + Style.RESET_ALL + "\n")
                     
                     for git_cmd in git_cmds:
                         if callable(git_cmd):

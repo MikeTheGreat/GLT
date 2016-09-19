@@ -38,7 +38,7 @@ def get_logger(name):
     formatter = logging.Formatter("[%(asctime)s - %(filename)s:%(lineno)s - %(levelname)-8s ] %(funcName)10s(): %(message)s" )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.CRITICAL)
     return logger
 logger = get_logger(__name__)
             

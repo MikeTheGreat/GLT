@@ -34,7 +34,6 @@ class EnvOptions(str, Enum):
     UPLOAD_FEEDBACK = "uploadFeedback"
     FEEDBACK_PATTERN = "pattern"
     FEEDBACK_PATTERN_DEFAULT = "grade"
-    DONT_UPLOAD = "local"
     GIT_TAG = "tag"
     GIT_TAG_DEFAULT = "GradedByInstructor"
 

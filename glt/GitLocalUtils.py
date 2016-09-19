@@ -27,6 +27,8 @@ def call_shell(cmd, exit_on_fail = True):
     logger.debug( "StdOut:\n" + tuple[0] )
     logger.debug( "StdErr:\n" + tuple[1] )
 
+    logger.debug("return code: " + str(p.returncode))
+
     # git sometimes uses '1' to indicate that something didn't have
     # a problem, but didn't do anything, either
     if p.returncode != 0 and p.returncode != 1:
