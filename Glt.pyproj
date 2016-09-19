@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>gradeList BIT142 Assign_1</CommandLineArguments>
+    <CommandLineArguments>uploadFeedback BIT142 Assign_1</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -53,10 +53,13 @@
     <Compile Include="glt\Constants.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="glt\GitDoUtils.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="glt\GitLabUtils.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="glt\GitDoUtils.py">
+    <Compile Include="glt\GitLocalUtils.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="glt\MainUtils.py" />

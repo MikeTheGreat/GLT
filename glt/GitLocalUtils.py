@@ -9,9 +9,51 @@ import subprocess
 from colorama import init # Back,
 init()
 
-from glt.MyClasses.CourseInfo import call_shell
-from glt.PrintUtils import print_error, get_logger
+from glt.PrintUtils import print_error
+from glt.PrintUtils import get_logger
 logger = get_logger(__name__)
+
+def call_shell(cmd, exit_on_fail = True):
+    """Invokes git in a command-line shell"""
+    logger.info( 'About to do:' + cmd)
+
+    p=subprocess.Popen(cmd.split(), # shell=True,\
+                bufsize = 1,\
+                stderr=subprocess.PIPE,\
+                stdout=subprocess.PIPE,
+                universal_newlines=True)
+    tuple = p.communicate()
+    p.wait()
+    logger.debug( "StdOut:\n" + tuple[0] )
+    logger.debug( "StdErr:\n" + tuple[1] )
+
+    # git sometimes uses '1' to indicate that something didn't have
+    # a problem, but didn't do anything, either
+    if p.returncode != 0 and p.returncode != 1:
+        print_error("Problem executing '"+cmd+"'\n\tIn: " + os.getcwd() +\
+            "\n\tReturn code:"+str(p.returncode))
+        if exit_on_fail:
+            exit()
+    else:
+        logger.debug('\nGit Command:\n\t' + cmd + ' - SUCCEEDED\n')
+
+def git_clone_repo(ip_addr, project, dest_dir):
+    # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
+    # The VM thinks it's servername is "ubuntu".  By using
+    # the environment's server IP addr setting we can get around this.
+
+    ssh_str = "git@" + ip_addr +":"+ project.path_with_namespace+".git"
+        
+    cwd_prev = os.getcwd()
+    os.chdir(dest_dir)
+        
+    # clone the newly-created project locally using 
+    # normal command-line git tools
+    # The '--progress' is important for actually capturing the output
+    # http://stackoverflow.com/questions/39564455/pythons-popen-communicate-only-returning-the-first-line-of-stdout/39565119#39565119
+    call_shell("git clone --progress " + ssh_str)
+        
+    os.chdir(cwd_prev)
 
 # NOTES:
 #
@@ -49,15 +91,14 @@ def generate_add_feedback(pattern, assign_dir):
             logger.debug( "Added " + " ".join(files_to_add) )
             return True
         else:
-            print_error( "Found NO feedback to add in " + \
-                path_to_repo.replace(assign_dir, ""))
+            print  "Found NO feedback to add in " + \
+                path_to_repo.replace(assign_dir, "")
             return False
 
     return add_feedback
 
 def print_dir():
     print "print_dir called in " + os.getcwd()
-
 
 def extract_commit_datetime(p):
     """Given a Git stdout message for a tag or commit, extract
@@ -69,20 +110,20 @@ def extract_commit_datetime(p):
     output = p.stderr.readline() # returns empty string if no error
     loc = output.lower().find("fatal")
     if loc != -1:
-        logger.error( "Fatal error - found 'fatal' in tag/commit message" )
+        #print "Fatal error"
         return None, None
 
     output = p.stdout.readline()
 
     while output:
-        logger.debug("LINE:" + output.strip() )
+        # print "LINE:" + output.strip()
     
         if state == 1: # looking for the commit
             loc = output.lower().find("commit")
             if loc != -1:
                 loc = len("commit") + loc + 1 #+1 for blank space
                 SHA_commit = output[loc:]
-                logger.debug( 'Found commit, SHA-1=' + SHA_commit )
+                # print 'Found commit, SHA-1=' + SHA_commit
                 state = 2 # looking for the date of the commit
         if state == 2: # looking for the date of the commit
             loc = output.lower().find("date:")
@@ -98,7 +139,7 @@ def extract_commit_datetime(p):
                 loc = date_str.rfind(' ')
                 date_str = date_str[:loc].strip()
     
-                logger.debug('Found date for commit:' + date_str)
+                # print 'Found date for commit:' + date_str
                 # Thu Sep 15 22:18:40 2016 -0700
                 dt = datetime.datetime.strptime(date_str, "%b %d %H:%M:%S %Y")
     
@@ -113,7 +154,6 @@ def extract_commit_datetime(p):
     # If we don't then we didn't find one or more of the things
     # we were looking for then send back nothing
     return None, None
-
 
 class grade_list_collector(object):
     """A class to collect up the 'what needs to be graded' info 
@@ -146,13 +186,13 @@ class grade_list_collector(object):
             p.terminate()
 
             if sha_tag is None:
-                logger.debug( "This assignment hasn't been graded yet" )
+                #print "This assignment hasn't been graded yet"
                 self.ungraded.append(os.getcwd())
             elif sha_head == sha_tag:
-                logger.debug( "SHA's for commits matched\n\tGRADED MOST RECENT SUBMISSION" )
+                #print "SHA's for commits matched\n\tGRADED MOST RECENT SUBMISSION"
                 self.graded.append(os.getcwd())
             elif dt_tag < dt_head:
-                logger.debug( "Instructor feedback was tagged then more work was submitted")
+                #print "Instructor feedback was tagged then more work was submitted"
                 self.new_student_work_since_grading.append(os.getcwd())
             else:
                 print_error("This directory has graded feedback, "\
@@ -160,6 +200,7 @@ class grade_list_collector(object):
                     " feedback commit & tag.  This might indicate a problem"\
                     " with a timezone on the server\n\t"+\
                     os.getcwd())
+            #TODO: SHA's don't match, but dt_tag >= dt_head?
             return True
 
         return grading_list_collector

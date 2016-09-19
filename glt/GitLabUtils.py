@@ -5,6 +5,7 @@ init()
 import gitlab
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.Constants import EnvOptions
+from glt.PrintUtils import print_error
 
 def connect_to_gitlab(env):
     """make an API request to create the glc.user object. This is mandatory
@@ -17,8 +18,7 @@ def connect_to_gitlab(env):
     try:
         glc.auth()
     except gitlab.GitlabError as exc:
-        print Fore.RED + Style.BRIGHT + 'Unable to connect to the GitLab server' + Style.RESET_ALL
-        print Fore.LIGHTYELLOW_EX + str(exc)
+        print_error( 'Unable to connect to the GitLab server', exc )
         exit()
     return glc
 

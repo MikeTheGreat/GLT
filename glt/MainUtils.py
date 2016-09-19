@@ -17,8 +17,8 @@ from glt.GitLabUtils import connect_to_gitlab, create_student_accounts,\
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
-from glt.PrintUtils import require_variable, require_env_option
-from glt.GitDoUtils import generate_add_feedback, grade_list_collector
+from glt.PrintUtils import print_color, require_variable, require_env_option
+from glt.GitLocalUtils import generate_add_feedback, grade_list_collector
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -261,20 +261,16 @@ def load_student_list(env):
     #if use_known_good is True:
     #    if EnvOptions.KNOWN_GOOD_ACCOUNTS not in env or \
     #        env[EnvOptions.KNOWN_GOOD_ACCOUNTS] is None:
-    #        print Fore.RED + Style.BRIGHT
-    #        print "You need to specify a 'known good accounts'"\
-    #            " file in your .gltrc file"
-    #        print Style.RESET_ALL
+    #        print_color( Fore.RED, "You need to specify a 'known good accounts'"\
+    #            " file in your .gltrc file" )
     #        exit()
     #    infile = open(env[EnvOptions.KNOWN_GOOD_ACCOUNTS], "r")
     #    file_type = FileFormat.FILE_TYPE_CSV_INTERNAL
     #else:
     if EnvOptions.INFILE not in env or \
         env[EnvOptions.INFILE] is None:
-        print Fore.RED + Style.BRIGHT
-        print "You need to specify an input file in order to " \
-            "load student account information!"
-        print Style.RESET_ALL
+        print_color( Fore.RED, "You need to specify an input file in "\
+            "order to load student account information!" )
         exit()
 
     infile = env[EnvOptions.INFILE]
@@ -321,7 +317,7 @@ def main():
     """ 'Main' function for glt.  Command-line tool just calls this
     to do everything"""
     #pylint: disable=too-many-statements,too-many-branches
-    print Fore.WHITE + Style.BRIGHT + "GitLab Tool (glt)" + Style.RESET_ALL
+    print_color( Fore.WHITE, "GitLab Tool (glt)" )
 
     env, parser, course_info = load_environment()
 
@@ -358,10 +354,8 @@ def main():
                         get_data_file_path(env)+")"))
 
         if not student_list.students_no_errors:
-            print Fore.RED + Style.BRIGHT
-            print "After removing existing accounts there "\
-                "aren't any new accounts to add"
-            print Style.RESET_ALL
+            print_color( Fore.RED, "After removing existing accounts there "\
+                "aren't any new accounts to add" )
             student_list.print_errors()
             exit()
 
@@ -431,7 +425,7 @@ def main():
             print "\nAttempting to download all homework assignments for " \
                 + env[EnvOptions.SECTION] + "\n"
         else:
-            print "\nAttempting to download all homework assignment \"" +\
+            print "\nAttempting to download homework assignment \"" +\
               env[EnvOptions.HOMEWORK_NAME] + "\" for " + \
               env[EnvOptions.SECTION] + "\n"
 
@@ -450,15 +444,13 @@ def main():
         if not updated_projects:
             print "No projects have been updated/downloaded"
         else:
-            print Fore.GREEN + Style.BRIGHT 
-            print "Updated the following projects:"
-            print Style.RESET_ALL
+            print_color( Fore.GREEN, "Updated the following projects:" )
+            print "(In the base directory of " + \
+                env[EnvOptions.STUDENT_WORK_DIR] + ")\n"
             for proj in updated_projects:
                 print "\t" + proj.student_dest_dir \
                     .replace(env[EnvOptions.STUDENT_WORK_DIR], "")
 
-            print "\nThese are all in the base directory of " + \
-                env[EnvOptions.STUDENT_WORK_DIR]
             print "\n" + "="*20 + "\n"
 
         exit()
@@ -535,8 +527,8 @@ def main():
         exit()
          
     elif env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK or\
-         env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK or\
-         env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+         env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST or\
+         env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
 
         require_env_option(env, EnvOptions.SECTION, \
         "You need to specify a section (course -e.g., bit142)"\
@@ -552,6 +544,19 @@ def main():
         require_variable( course_info, \
             "Could not find the data file for this section " \
             "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
+            print "\nAttempting to commit instructor feedback for section " + \
+                env[EnvOptions.SECTION] + ", homework assignment " + \
+                env[EnvOptions.HOMEWORK_NAME] + "\n"
+        elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+            print "\nGrading list for section " + \
+                env[EnvOptions.SECTION] + ", homework assignment " + \
+                env[EnvOptions.HOMEWORK_NAME] + "\n"
+        elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
+            print "\nAttempting to upload instructor feedback for section " + \
+                env[EnvOptions.SECTION] + ", homework assignment " + \
+                env[EnvOptions.HOMEWORK_NAME] + "\n"
 
         pattern = None
         if EnvOptions.FEEDBACK_PATTERN in env and \
@@ -577,6 +582,7 @@ def main():
             # First, add the instructor's feedback (based on the 
             # provided pattern, or the default is no pattern is given)
             # and then commit it to the local repo
+            print "\tLooking for file that match the pattern \"" + pattern + "\""
             commands.append(generate_add_feedback(pattern, assign_dir))
 
             commands.append("git tag -a " + tag + " -m INSTRUCTOR_FEEDBACK_ADDED")
@@ -599,17 +605,16 @@ def main():
 
         if env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
             if grading_list.new_student_work_since_grading:
-                print Fore.YELLOW + Style.BRIGHT
-                print "The following items have been re-submitted by students since grading:\n"
-                print Style.RESET_ALL
+                print_color( Fore.YELLOW, "The following items have been "\
+                    "re-submitted by students since grading:\n" )
 
                 for item in grading_list.new_student_work_since_grading:
                     print "\t" + item.replace(assign_dir, "")
                 print "\n" + "="*20 + "\n"
 
             if grading_list.ungraded:
-                print Fore.GREEN + Style.BRIGHT
-                print "The following items haven't been graded yet:\n"
+                print_color( Fore.GREEN, "The following items haven't "\
+                    "been graded yet:\n")
                 print Style.RESET_ALL
 
                 for item in grading_list.ungraded:
@@ -617,8 +622,7 @@ def main():
                 print "\n" + "="*20 + "\n"
 
             if grading_list.graded:
-                print Fore.WHITE + Style.BRIGHT
-                print "The following items have been graded:\n"
+                print_color( Fore.Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
                 print Style.RESET_ALL
 
                 for item in grading_list.graded:
@@ -628,6 +632,6 @@ def main():
         exit()
 
     else:
-        print Fore.RED + Style.BRIGHT + "\nNo recognized arguments!\n"+ Style.RESET_ALL
+        print_error( "\nNo recognized arguments!\n")
         parser.print_help()
         exit()

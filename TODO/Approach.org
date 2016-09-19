@@ -117,11 +117,3 @@ If you had a long running project that went the length of a class (ie a webapp, 
 	Remove all their projects
 	Remove groups
 		Including any starter projects in the groups
-
-* GitDo: execute a <shell script> once per git repo, given a list of git repos
-	This could be used to add files to everyone's git repos, commit the file, and then push the changes
-
-
-:Test:
-adfasdfasd
-:END:

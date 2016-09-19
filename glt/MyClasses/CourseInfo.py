@@ -15,7 +15,11 @@ from glt.MyClasses.Student import Student
 from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
 from glt.Constants import EnvOptions
-from glt.PrintUtils import print_error
+from glt.PrintUtils import print_color, print_error
+from glt.GitLocalUtils import call_shell, git_clone_repo
+
+from glt.PrintUtils import get_logger
+logger = get_logger(__name__)
 
 # """This exists to hold an assignment & it's GitLab ID"""
 HomeworkDesc = collections.namedtuple('HomeworkDesc', \
@@ -25,32 +29,6 @@ HomeworkDesc = collections.namedtuple('HomeworkDesc', \
 # downloaded/updated student project"""
 StudentHomeworkUpdateDesc = collections.namedtuple('StudentHomeworkUpdateDesc', \
     ['student', 'student_dest_dir', 'project', 'timestamp'])
-
-def call_shell(cmd):
-    """Invokes git in a command-line shell"""
-    print '\nAbout to do:\n\t' + cmd + '\n'
-    ret = subprocess.call(cmd.split(), shell=True)
-    if ret != 0:
-        print_error("Problem executing '"+cmd+"'\n\tReturn code:"+str(ret))
-        exit()
-    else:
-        print '\nGit Command:\n\t' + cmd + ' - SUCCEEDED\n'
-
-def git_clone_repo(ip_addr, project, dest_dir):
-    # NOTE: I'm testing GLT with a VM (VirtualBox+Ubuntu server)
-    # The VM thinks it's servername is "ubuntu".  By using
-    # the environment's server IP addr setting we can get around this.
-
-    ssh_str = "git@" + ip_addr +":"+ project.path_with_namespace+".git"
-        
-    cwd_prev = os.getcwd()
-    os.chdir(dest_dir)
-        
-    # clone the newly-created project locally using 
-    # normal command-line git tools
-    call_shell("git clone " + ssh_str)
-        
-    os.chdir(cwd_prev)
 
 def rmtree_remove_readonly_files(func, path, exc_info):
     """
@@ -181,6 +159,7 @@ class CourseInfo(object):
         by creating a project in the GitLab server,
         adding a record of the assignment to the course data file,
         and giving all current students access to the project"""
+        
         proj_name = self.homework_to_project_name( \
             env[EnvOptions.HOMEWORK_NAME])
 
@@ -217,7 +196,7 @@ class CourseInfo(object):
             if exc.error_message['name'][0].find("already been taken") >= 0:
                 proj_path = env[EnvOptions.USERNAME]+"/"+ proj_name
                 project = glc.projects.get(proj_path)
-                print "Found existing project " + project.name_with_namespace
+                logger.debug( "Found existing project " + project.name_with_namespace )
             else:
                 # For anything else, just exit here
                 print_error("Unable to create project " + proj_name)
@@ -327,9 +306,9 @@ class CourseInfo(object):
             print "There are no projects present on the GitLab server"
             return
 
-        print "Found the following projects:\n"
+        logger.debug( "Found the following projects:\n" )
         for project in projects:
-            print project.name_with_namespace + " ID: " + str(project.id)
+            logger.debug( project.name_with_namespace + " ID: " + str(project.id) )
 
             # See if the project matches any of the
             # 1/many projects that we're trying to download
@@ -341,16 +320,12 @@ class CourseInfo(object):
                         break
 
             if forked_project is None:
-                print "\tNOT a forked project (or not forked from "\
-                    + env[EnvOptions.HOMEWORK_NAME] + ")\n"
+                logger.debug( "\tNOT a forked project (or not forked from "\
+                    + env[EnvOptions.HOMEWORK_NAME] + ")\n" )
                 continue
 
-            print "\tProject was forked from " + forked_project.name \
-                + " (ID:"+str(forked_project.id)+")"
-
-            #project.pretty_print(1)
-            #print "="*20
-            #print
+            logger.debug( "\tProject was forked from " + forked_project.name \
+                + " (ID:"+str(forked_project.id)+")" )
 
             owner_name = project.path_with_namespace.split('/')[0]
             student = Student(username=owner_name, id=project.owner.id)
@@ -370,7 +345,7 @@ class CourseInfo(object):
                     for dir in dirs:
                         if dir == '.git':
                             git_dir = os.path.join( root, dir)
-                            print "Found an existing repo at " + git_dir
+                            logger.debug( "Found an existing repo at " + git_dir )
                             cwd_prev = os.getcwd()
                             os.chdir(root)
             
@@ -414,16 +389,14 @@ class CourseInfo(object):
                     # make the directory more readable by truncating
                     # the common root
                     local_dir = current_dir.replace(root_dir, "")
-#                    print Fore.LIGHTGREEN_EX + Style.BRIGHT
-#                    print "Found repo at " + local_dir + "\n"
-#                    print Style.RESET_ALL
+#                    print_color( Fore.LIGHTGREEN_EX, "Found repo at " + local_dir + "\n")
                     
                     for git_cmd in git_cmds:
                         if callable(git_cmd):
                             if not git_cmd():
                                 break # we're done here
                         elif isinstance(git_cmd, basestring):
-                            call_shell(git_cmd)
+                            call_shell(git_cmd, exit_on_fail=False)
                         else:
                             print_error( "This is neither a string nor a function:\n\t"\
                                 +str(git_cmd))

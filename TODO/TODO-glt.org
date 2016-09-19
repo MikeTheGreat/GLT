@@ -1,10 +1,20 @@
 * NEXT STEPS:
 
-** DONE GitDo
-   CLOSED: [2016-09-15 Thu 22:21]
-** GradingList
+** For a lot of the download,commit,upload stuff: it's very verbose
+*** DONE Use standard pythong logging instead of my own stuff :/
+    CLOSED: [2016-09-18 Sun 22:10]
+*** DONE Capture stdout (via popen & communicate) & eat it?
+    CLOSED: [2016-09-18 Sun 22:10]
+*** Consistently build lists of stuff that worked & present them to the user - UPLOAD
+*** DONE call_shell shouldn't produce output unless it needs to
+    CLOSED: [2016-09-18 Sun 22:11]
+** commitFeedback
+*** Figure out to avoid re-committing feedback if it's already there
+** gradeList - add 'all' option?
+** Go through this file, clean it up & figure out next steps
 ** Upload feedback
-*** How to make this idempotent? SPLIT THIS INTO TWO COMMANDS - COMMIT FEEDBACK AND UPLOAD FEEDBACK
+*** DONE How to make this idempotent? SPLIT THIS INTO TWO COMMANDS - COMMIT FEEDBACK AND UPLOAD FEEDBACK
+    CLOSED: [2016-09-18 Sun 22:32]
     Specifically, how to let instructors check in & tag stuff, then later on upload it?
     (Can I have call_shell continue on error (instead of exiting?))
 *** Verify that students can't permenantly destroy feedback
@@ -48,15 +58,11 @@ http://stackoverflow.com/questions/32017020/grouping-argparse-subparser-argument
 
 * Polish
 
-** For a lot of the download,commit,upload stuff: it's very verbose
-
-*** Capture stdout (via popen & communicate) & eat it?
-
-*** Consistently build lists of stuff that worked & present them to the user
-
-*** call_shell shouldn't produce output unless it needs to
+** Double check if any print_color(RED) should actually be print_error()
 
 ** grep for os.sep & replace with os.path.join
+
+** Remove 'Utils' from all the files' names
 * Needed docs
 ** DOCUMENT: How to connect to GitLab server via ssh
    (in glt_install.md)
@@ -127,6 +133,12 @@ https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
 *** https://www.dulwich.io/docs/tutorial/repo.html
 
 * Finished
+** DONE GradingList
+   CLOSED: [2016-09-18 Sun 22:33]
+
+** DONE GitDo
+   CLOSED: [2016-09-15 Thu 22:21]
+
 ** DONE Figure out how the projects are linked
    CLOSED: [2016-09-12 Mon 21:57]
 *** Create a bunch, then list projects to see how to find all the projects forked from the starter....

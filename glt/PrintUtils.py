@@ -1,16 +1,52 @@
 """ PrintUtils provides convenience routines for printing"""
 
+import logging
 import sys
-from colorama import Fore, Style, init # Back,
+from colorama import Back, Fore, Style, init
 init()
 
+def print_error(msg, exc=None):
+    """Print a message (in bold red) to standard error so the user can see it.
+    Also print out information about the exception, if it's present.
+    Log the same, while we're at it"""
+    print >> sys.stderr, Fore.RED + Style.BRIGHT
+    print >> sys.stderr, msg
+    print >> sys.stderr, Style.RESET_ALL
+    logger.error(msg)
+
+    if exc is not None:
+        print >> sys.stderr, "\tError Message: " + exc.error_message
+        print >> sys.stderr, "\tResponse code: " + str(exc.response_code)
+        print >> sys.stderr, "\tResponse Body: " + str(exc.response_body)
+
+def print_color(color, msg, color_bg=None):
+    """msg is a string to print
+    color is a member of Fore.*
+    msg will be printed in color, BRIGHT, and then all styles will be reset"""
+    print color + Style.BRIGHT
+    if color_bg is not None:
+        print color_bg
+    print msg + Style.RESET_ALL
+
+def get_logger(name):
+    logger = logging.getLogger(name)
+    handler = logging.StreamHandler()
+    # https://docs.python.org/2/library/logging.html#logrecord-attributes
+    # "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
+    # http://stackoverflow.com/questions/10973362/python-logging-function-name-file-name-line-number-using-a-single-file
+    # '%(asctime)s %(name)-12s  %(levelname)-8s %(message)s'
+    formatter = logging.Formatter("[%(asctime)s - %(filename)s:%(lineno)s - %(levelname)-8s ] %(funcName)10s(): %(message)s" )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.ERROR)
+    return logger
+logger = get_logger(__name__)
+            
 def require_variable(var, msg):
     """Verify that <var> is not None
     Otherwise print out <msg> and exit the program"""
     if var is None:
-        print Fore.RED + Style.BRIGHT
-        print msg
-        print Style.RESET_ALL
+        print_error(msg)
         exit()
 
 def require_env_option(env, option, msg):
@@ -18,19 +54,5 @@ def require_env_option(env, option, msg):
     Otherwise print out <msg> and exit the program"""
     if option not in env or \
     env[option] is None:
-        print Fore.RED + Style.BRIGHT
-        print msg
-        print Style.RESET_ALL
+        print_error(msg)
         exit()
-
-def print_error(msg, exc=None):
-    """Print a message (in bold red) to standard error.
-    Also print out information about the exception, if it's present"""
-    print >> sys.stderr, Fore.RED + Style.BRIGHT
-    print >> sys.stderr, msg
-    print >> sys.stderr, Style.RESET_ALL
-
-    if exc is not None:
-        print >> sys.stderr, "\tError Message: " + exc.error_message
-        print >> sys.stderr, "\tResponse code: " + str(exc.response_code)
-        print >> sys.stderr, "\tResponse Body: " + exc.response_body
