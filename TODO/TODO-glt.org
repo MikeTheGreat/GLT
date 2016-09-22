@@ -1,5 +1,5 @@
 * NEXT STEPS:
-
+** Look at '--porcelain' option for parsing by scripts (and plumbing commands?)
 ** commitFeedback
 *** Figure out to avoid re-committing feedback if it's already there (getting error messages because the tag already exists)
 ** gradeList - add 'all' option?
@@ -249,3 +249,10 @@ https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
  https://github.com/docopt/docopt
        from docopt import docopt
        Can I do substitution/interpolation of the 'glt.py' in the docstring?
+* Notes
+** List of porcelain commands with --porcelain option
+git status --porcelain
+git push --porcelain
+git blame --porcelain
+git commit --porcelain
+git worktree list --porcelain

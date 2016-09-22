@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>uploadFeedback BIT142 Assign_1</CommandLineArguments>
+    <CommandLineArguments>commitFeedback BIT142 Assign_1</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -35,6 +35,7 @@
     <Content Include="Misc\Data\BIT142.txt" />
     <Content Include="README.md" />
     <Content Include="SampleInputs\Git_Repos\A1\File.txt" />
+    <Content Include="Tests\Batch_Files\commitFeedback.bat" />
     <Content Include="TODO\Approach.org" />
     <Content Include="TODO\orgcard.pdf" />
     <Content Include="SampleInputs\HTML\class_roster.html" />
@@ -104,6 +105,7 @@
     <Folder Include="Misc\Data\" />
     <Folder Include="SampleInputs\Git_Repos\" />
     <Folder Include="SampleInputs\Git_Repos\A1\" />
+    <Folder Include="Tests\Batch_Files\" />
     <Folder Include="TODO\" />
     <Folder Include="Tests\" />
     <Folder Include="SampleInputs" />

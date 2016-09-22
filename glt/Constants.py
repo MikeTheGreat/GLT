@@ -35,7 +35,7 @@ class EnvOptions(str, Enum):
     FEEDBACK_PATTERN = "pattern"
     FEEDBACK_PATTERN_DEFAULT = "grade"
     GIT_TAG = "tag"
-    GIT_TAG_DEFAULT = "GradedByInstructor"
+    GIT_TAG_DEFAULT = "GradedByInstructor-V1"
 
     GRADING_LIST = "gradeList"
 

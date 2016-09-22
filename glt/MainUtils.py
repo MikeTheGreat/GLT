@@ -17,9 +17,9 @@ from glt.GitLabUtils import connect_to_gitlab, create_student_accounts,\
 from glt.MyClasses.StudentCollection import UserErrorDesc
 from glt.MyClasses import CourseInfo
 from glt.Constants import EnvOptions
-from glt.PrintUtils import print_color, require_variable, require_env_option
-from glt.GitLocalUtils import generate_add_feedback, grade_list_collector
-from glt.GitDoUtils import upload_list_collector
+from glt.PrintUtils import print_color, print_list, require_variable, require_env_option
+from glt.GitLocalUtils import commit_feedback_collector, \
+    grade_list_collector, upload_list_collector
 
 def parse_args():
     """Sets up the parse for the command line arguments, and parses them"""
@@ -583,10 +583,11 @@ def main():
             # First, add the instructor's feedback (based on the 
             # provided pattern, or the default is no pattern is given)
             # and then commit it to the local repo
-            print "\tLooking for file that match the pattern \"" + pattern + "\""
-            commands.append(generate_add_feedback(pattern, assign_dir))
-
-            commands.append("git tag -a " + tag + " -m INSTRUCTOR_FEEDBACK_ADDED")
+            feedback_list = commit_feedback_collector()
+            print "\tAttempting to commit feedback files that match the "\
+                "pattern \"" + pattern + "\""
+            commands.append(feedback_list.generate_commit_feedback\
+                (pattern, tag, assign_dir))
 
         elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
             # upload the results back to the server 
@@ -602,54 +603,50 @@ def main():
 
         course_info.git_do_core(assign_dir, commands )
 
+        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
+            print_list(assign_dir, feedback_list.no_feedback_ever, \
+                Fore.RED, "Didn't find any feedback "\
+                    "in the following directories\n" )
+
+            print_list(assign_dir, feedback_list.new_feedback, \
+                Fore.GREEN, "Committed new feedback "\
+                    "in the following directories:\n" )
+
+            print_list(assign_dir, feedback_list.current_feedback_updated, \
+                Fore.GREEN, "Committed updates to the feedback "\
+                    "in the following directories:\n" )
+
+            print_list(assign_dir, feedback_list.current_feedback_not_changed, \
+                Fore.YELLOW, "The following directories have "\
+                    "unchanged, existing feedback (so nothing needed to be done)\n")
+
         if env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
-            if grading_list.new_student_work_since_grading:
-                # TODO: Refactor this block of code?
-                print_color( Fore.YELLOW, "The following items have been "\
-                    "re-submitted by students since grading:\n" )
 
-                for item in grading_list.new_student_work_since_grading:
-                    print "\t" + item.replace(assign_dir, "")
-                print "\n" + "="*20 + "\n"
+            print_list(assign_dir, grading_list.new_student_work_since_grading, \
+                Fore.YELLOW, "The following items have been "\
+            "re-submitted by students since grading:\n" )
 
-            if grading_list.ungraded:
-                print_color( Fore.GREEN, "The following items haven't "\
+            print_list( assign_dir, grading_list.ungraded, \
+                Fore.GREEN, "The following items haven't "\
                     "been graded yet:\n")
-                print Style.RESET_ALL
 
-                for item in grading_list.ungraded:
-                    print "\t" + item.replace(assign_dir, "")
-                print "\n" + "="*20 + "\n"
-
-            if grading_list.graded:
-                print_color( Fore.Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
-                print Style.RESET_ALL
-
-                for item in grading_list.graded:
-                    print "\t" + item.replace(assign_dir, "")
-                print "\n" + "="*20 + "\n"
+            print_list( assign_dir, grading_list.graded, \
+                Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
 
         if env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
-            if upload_list.uploaded:
-                print_color( Fore.GREEN, "The following items have been "\
+
+            print_list( assign_dir, upload_list.uploaded, \
+                Fore.GREEN, "The following items have been "\
                     "changed (and committed) locally since downloading them."\
                     "They've now been uploaded back to the server\n" )
-
-                for item in upload_list.uploaded:
-                    print "\t" + item.replace(assign_dir, "")
-                print "\n" + "="*20 + "\n"
-            else:
+            if not upload_list.uploaded:
                 print_color( Fore.RED, "There were NO repos that were uploaded"\
                    " to the server (because there were no changes committed)" )
 
-            if upload_list.unchanged:
-                print_color( Fore.YELLOW, "The following items have NOT been "\
+            print_list( assign_dir, upload_list.unchanged, \
+                Fore.YELLOW, "The following items have NOT been "\
                     "changed locally since downloading them."\
                     "They were NOT uploaded back to the server" )
-
-                for item in upload_list.unchanged:
-                    print "\t" + item.replace(assign_dir, "")
-                print "\n" + "="*20 + "\n"
 
         exit()
 

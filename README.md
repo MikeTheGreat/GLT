@@ -4,6 +4,10 @@ This software was made possible by the support from [Cascadia Community College]
 
 This software was written by Mike Panitz.
 
+**This software is 'pre-alpha' software.**  The features are mostly done, 
+it worked on my machine when I tested it by hand, but it's not ready
+for use by other people yet.
+
 ### What is this repository for? ###
 
 * Quick summary

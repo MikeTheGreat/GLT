@@ -32,13 +32,10 @@ def get_logger(name):
     logger = logging.getLogger(name)
     handler = logging.StreamHandler()
     # https://docs.python.org/2/library/logging.html#logrecord-attributes
-    # "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
-    # http://stackoverflow.com/questions/10973362/python-logging-function-name-file-name-line-number-using-a-single-file
-    # '%(asctime)s %(name)-12s  %(levelname)-8s %(message)s'
     formatter = logging.Formatter("[%(asctime)s - %(filename)s:%(lineno)s - %(levelname)-8s ] %(funcName)10s(): %(message)s" )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.CRITICAL)
+    logger.setLevel(logging.DEBUG)
     return logger
 logger = get_logger(__name__)
             
@@ -56,3 +53,11 @@ def require_env_option(env, option, msg):
     env[option] is None:
         print_error(msg)
         exit()
+
+def print_list(assign_dir, the_list, color, msg):
+    if the_list:
+        print_color( color, msg )
+    
+        for item in the_list:
+            print "\t" + item.replace(assign_dir, "")
+        print "\n" + "="*20 + "\n"
