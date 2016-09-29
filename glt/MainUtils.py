@@ -324,7 +324,77 @@ def main():
 
     require_env_option(env, EnvOptions.ACTION, "Unrecognized action (or no action listed)")
 
-    if env[EnvOptions.ACTION] == EnvOptions.CREATE_STUDENTS:
+    if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory containing the student projects")
+
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        print "\nAttempting to commit instructor feedback for section " + \
+            env[EnvOptions.SECTION] + ", homework assignment " + \
+            env[EnvOptions.HOMEWORK_NAME] + "\n"
+
+        pattern = None
+        if EnvOptions.FEEDBACK_PATTERN in env and \
+            env[EnvOptions.FEEDBACK_PATTERN] is not None:
+            pattern = env[EnvOptions.FEEDBACK_PATTERN]
+        else:
+            pattern = EnvOptions.FEEDBACK_PATTERN_DEFAULT.value
+
+		#Tag the commit so we can look it up again later if needed.
+        tag = None
+        if EnvOptions.GIT_TAG in env and \
+            env[EnvOptions.GIT_TAG] is not None:
+            tag = env[EnvOptions.GIT_TAG]
+        else:
+            tag = EnvOptions.GIT_TAG_DEFAULT
+
+        commands = list()
+        assign_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
+            env[EnvOptions.SECTION],
+            env[EnvOptions.HOMEWORK_NAME])
+
+        # First, add the instructor's feedback (based on the 
+        # provided pattern, or the default is no pattern is given)
+        # and then commit it to the local repo
+        feedback_list = commit_feedback_collector()
+        print "\tAttempting to commit feedback files that match the "\
+            "pattern \"" + pattern + "\""
+        commands.append(feedback_list.generate_commit_feedback\
+            (pattern, tag, assign_dir))
+
+        course_info.git_do_core(assign_dir, commands )
+
+        print_list(assign_dir, feedback_list.no_feedback_ever, \
+            Fore.RED, "Didn't find any feedback "\
+                "in the following directories\n" )
+
+        print_list(assign_dir, feedback_list.new_feedback, \
+            Fore.GREEN, "Committed new feedback "\
+                "in the following directories:\n" )
+
+        print_list(assign_dir, feedback_list.current_feedback_updated, \
+            Fore.GREEN, "Committed updates to the feedback "\
+                "in the following directories:\n" )
+
+        print_list(assign_dir, feedback_list.current_feedback_not_changed, \
+            Fore.YELLOW, "The following directories have "\
+                "unchanged, existing feedback (so nothing needed to be done)\n")
+
+        exit()
+         
+    elif env[EnvOptions.ACTION] == EnvOptions.CREATE_STUDENTS:
 
         print "\nAttempting to create student accounts for " + env[EnvOptions.SECTION] + "\n"
 
@@ -386,7 +456,7 @@ def main():
         course_info.write_data_file(get_data_file_path(env))
         exit()
 
-    if env[EnvOptions.ACTION] == EnvOptions.DELETE_CLASS:
+    elif env[EnvOptions.ACTION] == EnvOptions.DELETE_CLASS:
 
         require_env_option(env, EnvOptions.SECTION, \
             "You need to specify a section (course -e.g., bit142)"\
@@ -482,6 +552,61 @@ def main():
 
         exit()
 
+    elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
+
+        require_env_option(env, EnvOptions.SECTION, \
+        "You need to specify a section (course -e.g., bit142)"\
+               " to create all the student accounts!")
+
+        require_env_option(env, EnvOptions.HOMEWORK_NAME, \
+            "You must specify the name of a homework assignment "\
+            "(or 'all', to download all assignments for this class)")
+
+        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+            "You must specify the directory containing the student projects")
+
+        require_variable( course_info, \
+            "Could not find the data file for this section " \
+            "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        print "\nGrading list for section " + \
+            env[EnvOptions.SECTION] + ", homework assignment " + \
+            env[EnvOptions.HOMEWORK_NAME] + "\n"
+
+		# If the instructor chose to use a different tag to mark 
+        # graded feedback, then they'll need to specify that tag
+        # again here in order for this to work
+        tag = None
+        if EnvOptions.GIT_TAG in env and \
+            env[EnvOptions.GIT_TAG] is not None:
+            tag = env[EnvOptions.GIT_TAG]
+        else:
+            tag = EnvOptions.GIT_TAG_DEFAULT
+
+        commands = list()
+        assign_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
+            env[EnvOptions.SECTION],
+            env[EnvOptions.HOMEWORK_NAME])
+
+        grading_list = grade_list_collector ()
+        grading_list_collector = grading_list.generate_grading_list_collector(tag)
+        commands.append(grading_list_collector)
+
+        course_info.git_do_core(assign_dir, commands )
+
+        print_list(assign_dir, grading_list.new_student_work_since_grading, \
+            Fore.YELLOW, "The following items have been "\
+        "re-submitted by students since grading:\n" )
+
+        print_list( assign_dir, grading_list.ungraded, \
+            Fore.GREEN, "The following items haven't "\
+                "been graded yet:\n")
+
+        print_list( assign_dir, grading_list.graded, \
+            Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
+
+        exit()
+
     elif env[EnvOptions.ACTION] == EnvOptions.LIST_PROJECTS:
         glc = connect_to_gitlab(env)
         print 'Listing projects:'
@@ -526,10 +651,8 @@ def main():
 
         course_info.write_data_file(get_data_file_path(env))
         exit()
-         
-    elif env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK or\
-         env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST or\
-         env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
+
+    elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
 
         require_env_option(env, EnvOptions.SECTION, \
         "You need to specify a section (course -e.g., bit142)"\
@@ -546,107 +669,34 @@ def main():
             "Could not find the data file for this section " \
             "(expected to find it at " + get_data_file_path(env) + ")" )
 
-        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
-            print "\nAttempting to commit instructor feedback for section " + \
-                env[EnvOptions.SECTION] + ", homework assignment " + \
-                env[EnvOptions.HOMEWORK_NAME] + "\n"
-        elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
-            print "\nGrading list for section " + \
-                env[EnvOptions.SECTION] + ", homework assignment " + \
-                env[EnvOptions.HOMEWORK_NAME] + "\n"
-        elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
-            print "\nAttempting to upload instructor feedback for section " + \
-                env[EnvOptions.SECTION] + ", homework assignment " + \
-                env[EnvOptions.HOMEWORK_NAME] + "\n"
-
-        pattern = None
-        if EnvOptions.FEEDBACK_PATTERN in env and \
-            env[EnvOptions.FEEDBACK_PATTERN] is not None:
-            pattern = env[EnvOptions.FEEDBACK_PATTERN]
-        else:
-            pattern = EnvOptions.FEEDBACK_PATTERN_DEFAULT.value
-
-		#Tag the commit so we can look it up again later if needed.
-        tag = None
-        if EnvOptions.GIT_TAG in env and \
-            env[EnvOptions.GIT_TAG] is not None:
-            tag = env[EnvOptions.GIT_TAG]
-        else:
-            tag = EnvOptions.GIT_TAG_DEFAULT
+        print "\nAttempting to upload instructor feedback for section " + \
+            env[EnvOptions.SECTION] + ", homework assignment " + \
+            env[EnvOptions.HOMEWORK_NAME] + "\n"
 
         commands = list()
         assign_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
             env[EnvOptions.SECTION],
             env[EnvOptions.HOMEWORK_NAME])
 
-        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
-            # First, add the instructor's feedback (based on the 
-            # provided pattern, or the default is no pattern is given)
-            # and then commit it to the local repo
-            feedback_list = commit_feedback_collector()
-            print "\tAttempting to commit feedback files that match the "\
-                "pattern \"" + pattern + "\""
-            commands.append(feedback_list.generate_commit_feedback\
-                (pattern, tag, assign_dir))
-
-        elif env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
-            # upload the results back to the server 
-            upload_list = upload_list_collector()
-            upload_collector = upload_list.generate_upload_list_collector()
-            commands.append( upload_collector )
-
-        elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
-
-            grading_list = grade_list_collector ()
-            grading_list_collector = grading_list.generate_grading_list_collector(tag)
-            commands.append(grading_list_collector)
+        # upload the results back to the server 
+        upload_list = upload_list_collector()
+        upload_collector = upload_list.generate_upload_list_collector()
+        commands.append( upload_collector )
 
         course_info.git_do_core(assign_dir, commands )
 
-        if env[EnvOptions.ACTION] == EnvOptions.COMMIT_FEEDBACK:
-            print_list(assign_dir, feedback_list.no_feedback_ever, \
-                Fore.RED, "Didn't find any feedback "\
-                    "in the following directories\n" )
+        print_list( assign_dir, upload_list.uploaded, \
+            Fore.GREEN, "The following items have been "\
+                "changed (and committed) locally since downloading them."\
+                "They've now been uploaded back to the server\n" )
+        if not upload_list.uploaded:
+            print_color( Fore.RED, "There were NO repos that were uploaded"\
+                " to the server (because there were no changes committed)" )
 
-            print_list(assign_dir, feedback_list.new_feedback, \
-                Fore.GREEN, "Committed new feedback "\
-                    "in the following directories:\n" )
-
-            print_list(assign_dir, feedback_list.current_feedback_updated, \
-                Fore.GREEN, "Committed updates to the feedback "\
-                    "in the following directories:\n" )
-
-            print_list(assign_dir, feedback_list.current_feedback_not_changed, \
-                Fore.YELLOW, "The following directories have "\
-                    "unchanged, existing feedback (so nothing needed to be done)\n")
-
-        if env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
-
-            print_list(assign_dir, grading_list.new_student_work_since_grading, \
-                Fore.YELLOW, "The following items have been "\
-            "re-submitted by students since grading:\n" )
-
-            print_list( assign_dir, grading_list.ungraded, \
-                Fore.GREEN, "The following items haven't "\
-                    "been graded yet:\n")
-
-            print_list( assign_dir, grading_list.graded, \
-                Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
-
-        if env[EnvOptions.ACTION] == EnvOptions.UPLOAD_FEEDBACK:
-
-            print_list( assign_dir, upload_list.uploaded, \
-                Fore.GREEN, "The following items have been "\
-                    "changed (and committed) locally since downloading them."\
-                    "They've now been uploaded back to the server\n" )
-            if not upload_list.uploaded:
-                print_color( Fore.RED, "There were NO repos that were uploaded"\
-                   " to the server (because there were no changes committed)" )
-
-            print_list( assign_dir, upload_list.unchanged, \
-                Fore.YELLOW, "The following items have NOT been "\
-                    "changed locally since downloading them."\
-                    "They were NOT uploaded back to the server" )
+        print_list( assign_dir, upload_list.unchanged, \
+            Fore.YELLOW, "The following items have NOT been "\
+                "changed locally since downloading them."\
+                "They were NOT uploaded back to the server" )
 
         exit()
 

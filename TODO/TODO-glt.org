@@ -125,6 +125,9 @@ https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
 *** https://www.dulwich.io/docs/tutorial/repo.html
 
 * Finished
+
+** DONE Separated out commit feedback, gradelist, uploadfeedback
+   CLOSED: [2016-09-28 Wed 17:30]
 ** DONE For a lot of the download,commit,upload stuff: it's very verbose
    CLOSED: [2016-09-19 Mon 00:54]
 *** DONE Use standard pythong logging instead of my own stuff :/
