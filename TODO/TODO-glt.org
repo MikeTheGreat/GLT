@@ -1,8 +1,11 @@
 * NEXT STEPS:
+** gradeList - add 'all' option?
+*** DONE need 'all' for section
+    CLOSED: [2016-09-30 Fri 00:24]
+*** add option to print_list to display a message if the list is empty
 ** Look at '--porcelain' option for parsing by scripts (and plumbing commands?)
 ** commitFeedback
 *** Figure out to avoid re-committing feedback if it's already there (getting error messages because the tag already exists)
-** gradeList - add 'all' option?
 ** Go through this file, clean it up & figure out next steps
 ** Upload feedback
 *** DONE How to make this idempotent? SPLIT THIS INTO TWO COMMANDS - COMMIT FEEDBACK AND UPLOAD FEEDBACK

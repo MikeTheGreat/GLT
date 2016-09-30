@@ -4,7 +4,8 @@ but don't want to clutter up glt.py with"""
 import argparse
 import os.path
 
-import rcfile
+from from_elsewhere import rcfile
+#import rcfile
 from colorama import Fore, Style, init, Back
 init()
 
@@ -119,9 +120,11 @@ def parse_args():
               "which have been graded and are unchanged",
               parents=[common_parser])
     grading_list.add_argument(EnvOptions.SECTION.value, \
-        help='Name of the course (e.g., bit142)')
+        help='Name of the course (e.g., bit142), or'\
+                '\'all\' for all sections')
     grading_list.add_argument(EnvOptions.HOMEWORK_NAME.value, \
-        help='Name of the homework assignment (e.g., Assignment_1)')
+        help='Name of the homework assignment (e.g., Assignment_1),'\
+                'or \'all\' for all homeworks')
 
     ################ Upload Feedback ################
     upload_feedback = subparsers.add_parser(EnvOptions.UPLOAD_FEEDBACK.value, \
@@ -183,6 +186,7 @@ def load_environment():
 
     cmd_line_args, parser = parse_args()
     env = rcfile.rcfile("glt", args=vars(cmd_line_args), module_name="defaults")
+
     # Note that we've merged the command-line args into the rcfile info,
     # even though we use the cmd_line_args to check for command line args
     # (this allows us to override rcfile info but still get Python to
@@ -218,16 +222,7 @@ def load_environment():
         EnvOptions.SECTION in env and \
         env[EnvOptions.SECTION] is not None:
 
-        # load existing course info (including the list of student accounts)
-        # (if it doesn't exist that's fine - just ignore it)
-        info_path = get_data_file_path(env)
-
-        if os.path.isfile(info_path):
-            info_file = open(info_path, "r")
-            course_info = CourseInfo.CourseInfo(env[EnvOptions.SECTION], \
-                info_file)
-        else:
-            course_info = CourseInfo.CourseInfo(env[EnvOptions.SECTION])
+        course_info = load_data_file(env, env[EnvOptions.SECTION])
 
     # 'synthesize' useful variables from existing ones:
     if (EnvOptions.SERVER not in env or \
@@ -236,14 +231,37 @@ def load_environment():
         env[EnvOptions.SERVER_IP_ADDR] is not None:
         env[EnvOptions.SERVER] = "http://"+env[EnvOptions.SERVER_IP_ADDR]
 
+    # Remove the 'defaults' section, since that's not
+    # an actual course section
+    if 'defaults' in env[EnvOptions.SECTION_LIST]:
+        env[EnvOptions.SECTION_LIST].remove('defaults')
 
     return env, parser, course_info
 
-def get_data_file_path(env):
+def load_data_file(env, section):
+    # load existing course info (including the list of student accounts)
+    # (if it doesn't exist that's fine - just ignore it)
+    info_path = get_data_file_path(env, section)
+
+    if os.path.isfile(info_path):
+        info_file = open(info_path, "r")
+        course_info = CourseInfo.CourseInfo(section, info_file)
+    else:
+        course_info = CourseInfo.CourseInfo(section)
+
+    return course_info
+
+def get_data_file_path(env, section = None):
     """Assumes that DATA_DIR and SECTION are defined,
     returns data file for this section"""
+    if section == None:
+        section = env[EnvOptions.SECTION]
     return os.path.join( env[EnvOptions.DATA_DIR], \
-        env[EnvOptions.SECTION] + ".txt")
+        section + ".txt")
+
+def get_section_list(env):
+    """This will return a list of all sections listed in the .gltrc file"""
+    pass
 
 def load_student_list(env):
     """Loads student account information into a StudentCollection's
@@ -555,23 +573,21 @@ def main():
     elif env[EnvOptions.ACTION] == EnvOptions.GRADING_LIST:
 
         require_env_option(env, EnvOptions.SECTION, \
-        "You need to specify a section (course -e.g., bit142)"\
-               " to create all the student accounts!")
+            "You need to specify a section (course -e.g., bit142)"\
+            " to create all the student accounts!")
 
         require_env_option(env, EnvOptions.HOMEWORK_NAME, \
             "You must specify the name of a homework assignment "\
-            "(or 'all', to download all assignments for this class)")
+            "(or 'all', to generate a grading list for "\
+            "all assignments for this class)")
 
-        require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
+        if env[EnvOptions.SECTION].lower() != "all":
+            require_env_option(env, EnvOptions.STUDENT_WORK_DIR, \
             "You must specify the directory containing the student projects")
-
-        require_variable( course_info, \
-            "Could not find the data file for this section " \
-            "(expected to find it at " + get_data_file_path(env) + ")" )
-
-        print "\nGrading list for section " + \
-            env[EnvOptions.SECTION] + ", homework assignment " + \
-            env[EnvOptions.HOMEWORK_NAME] + "\n"
+            
+            require_variable( course_info, \
+                "Could not find the data file for this section " \
+                "(expected to find it at " + get_data_file_path(env) + ")" )
 
 		# If the instructor chose to use a different tag to mark 
         # graded feedback, then they'll need to specify that tag
@@ -583,27 +599,56 @@ def main():
         else:
             tag = EnvOptions.GIT_TAG_DEFAULT
 
-        commands = list()
-        assign_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
-            env[EnvOptions.SECTION],
-            env[EnvOptions.HOMEWORK_NAME])
+        if env[EnvOptions.SECTION].lower() == "all": 
+            section_list = list(env[EnvOptions.SECTION_LIST])
+        else:
+            section_list = [course_info.section]
 
-        grading_list = grade_list_collector ()
-        grading_list_collector = grading_list.generate_grading_list_collector(tag)
-        commands.append(grading_list_collector)
+        for sect in section_list:
+            # go find the information specific to this 
 
-        course_info.git_do_core(assign_dir, commands )
+            course_env = rcfile.rcfile("glt", module_name=sect)
+            course_env = rcfile.merge(course_env, env)
+            course_env[EnvOptions.SECTION] = sect
+            course_info = load_data_file(env, sect)
 
-        print_list(assign_dir, grading_list.new_student_work_since_grading, \
-            Fore.YELLOW, "The following items have been "\
-        "re-submitted by students since grading:\n" )
+            if course_env[EnvOptions.HOMEWORK_NAME].lower() == 'all':
+                # we're going to make a new list with all the projects
+                hw_list = list(course_info.assignments)
+                print_color(Fore.GREEN, "\nGrading list for section " + \
+                    course_env[EnvOptions.SECTION] + " (all homework assignments)\n")
+            else:
+                # we're going to make a new list that should match just one
+                # homework assignment
+                hw_list= [item for item in course_info.assignments \
+                    if item.name == course_env[EnvOptions.HOMEWORK_NAME]]
+                print_color(Fore.GREEN, "\nGrading list for section " + \
+                    course_env[EnvOptions.SECTION] + ", homework assignment " + \
+                    course_env[EnvOptions.HOMEWORK_NAME] + "\n")
 
-        print_list( assign_dir, grading_list.ungraded, \
-            Fore.GREEN, "The following items haven't "\
-                "been graded yet:\n")
+            for hw in hw_list:
+                print_color(Fore.RED, "Grading list for " + hw.name)
+                commands = list()
+                assign_dir = os.path.join(course_env[EnvOptions.STUDENT_WORK_DIR], \
+                    course_env[EnvOptions.SECTION],
+                    hw.name)
 
-        print_list( assign_dir, grading_list.graded, \
-            Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
+                grading_list = grade_list_collector ()
+                grading_list_collector = grading_list.generate_grading_list_collector(tag)
+                commands.append(grading_list_collector)
+
+                course_info.git_do_core(assign_dir, commands )
+
+                print_list(assign_dir, grading_list.new_student_work_since_grading, \
+                    Fore.YELLOW, "The following items have been "\
+                "re-submitted by students since grading:\n" )
+
+                print_list( assign_dir, grading_list.ungraded, \
+                    Fore.GREEN, "The following items haven't "\
+                        "been graded yet:\n")
+
+                print_list( assign_dir, grading_list.graded, \
+                    Fore.LIGHTCYAN_EX, "The following items have been graded:\n")
 
         exit()
 

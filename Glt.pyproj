@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>uploadFeedback BIT142 Assign_1</CommandLineArguments>
+    <CommandLineArguments>gradeList all all</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -51,6 +51,10 @@
     <Content Include="TODO\TODO-glt.org" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="from_elsewhere\rcfile.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="from_elsewhere\__init__.py" />
     <Compile Include="glt\Constants.py">
       <SubType>Code</SubType>
     </Compile>
@@ -103,6 +107,7 @@
     <Folder Include="glt\" />
     <Folder Include="glt\Parsers\" />
     <Folder Include="Misc\Data\" />
+    <Folder Include="from_elsewhere\" />
     <Folder Include="SampleInputs\Git_Repos\" />
     <Folder Include="SampleInputs\Git_Repos\A1\" />
     <Folder Include="Tests\Batch_Files\" />

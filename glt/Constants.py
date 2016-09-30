@@ -50,3 +50,4 @@ class EnvOptions(str, Enum):
     KNOWN_GOOD_ACCOUNTS = "known_good_accounts"
     DATA_DIR = "data_dir"
     TEMP_DIR = "temp_dir"
+    SECTION_LIST = 'section_list'
