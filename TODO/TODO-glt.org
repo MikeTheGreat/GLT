@@ -1,4 +1,6 @@
 * NEXT STEPS:
+** create users: there's an 'external' option for accounts: 
+*** "External users cannot see internal or private projects unless access is explicitly granted. Also, external users cannot create projects or groups."
 ** gradeList - add 'all' option?
 *** DONE need 'all' for section
     CLOSED: [2016-09-30 Fri 00:24]
