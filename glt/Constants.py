@@ -16,6 +16,11 @@ class EnvOptions(str, Enum):
     USERNAME = 'username'
     PASSWORD = 'password'
 
+    # command line option for listing projects
+    # This is mostly useful to check your configuration
+    # and make sure you can connect to the server
+    LIST_PROJECTS = "listProjects"
+
     # command line args for creating student accounts
     CREATE_STUDENTS = "addStudents"
     INFILE = "infile"
@@ -24,11 +29,14 @@ class EnvOptions(str, Enum):
 
     DELETE_CLASS = "deleteClass"
 
+    # Adding a new homework project:
+    NEW_HOMEWORK = "addHomework"
+    HOMEWORK_NAME = 'homework_name'
+    HOMEWORK_DIR = 'homework_path'
+
+
     DOWNLOAD_HOMEWORK = "download"
     STUDENT_WORK_DIR = "student_work_dir"
-
-    # command line option for listing projects
-    LIST_PROJECTS = "listProjects"
 
     COMMIT_FEEDBACK = "commitFeedback"
     UPLOAD_FEEDBACK = "uploadFeedback"
@@ -41,10 +49,6 @@ class EnvOptions(str, Enum):
 
     GIT_DO = "gitdo"
     GIT_COMMAND = "gitCommand"
-
-    NEW_HOMEWORK = "addHomework"
-    HOMEWORK_NAME = 'homework_name'
-    HOMEWORK_DIR = 'homework_path'
 
     # .gltrc file
     KNOWN_GOOD_ACCOUNTS = "known_good_accounts"

@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>gradeList all all</CommandLineArguments>
+    <CommandLineArguments>-h</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -32,7 +32,8 @@
     <Content Include="docs\typical_usage.md" />
     <Content Include="docs\InstallInstructions.md" />
     <Content Include="LICENSE" />
-    <Content Include="Misc\Data\BIT142.txt" />
+    <Content Include="Misc\AzureStuff\GitLabServer_notes.txt" />
+    <Content Include="Misc\Data\BIT142_VM.txt" />
     <Content Include="README.md" />
     <Content Include="SampleInputs\Git_Repos\A1\File.txt" />
     <Content Include="Tests\Batch_Files\commitFeedback.bat" />
@@ -56,9 +57,6 @@
     </Compile>
     <Compile Include="from_elsewhere\__init__.py" />
     <Compile Include="glt\Constants.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="glt\GitDoUtils.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="glt\GitLabUtils.py">
@@ -106,6 +104,7 @@
     <Folder Include="glt\MyClasses\" />
     <Folder Include="glt\" />
     <Folder Include="glt\Parsers\" />
+    <Folder Include="Misc\AzureStuff\" />
     <Folder Include="Misc\Data\" />
     <Folder Include="from_elsewhere\" />
     <Folder Include="SampleInputs\Git_Repos\" />

@@ -55,7 +55,9 @@ def require_env_option(env, option, msg):
         print_error(msg)
         exit()
 
-def print_list(assign_dir, the_list, color, msg):
+def print_list(assign_dir, the_list, color, msg, missing_msg = None):
+    if not the_list and missing_msg is not None:
+        print_color( color, missing_msg )
     if the_list:
         print_color( color, msg )
     

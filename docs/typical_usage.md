@@ -1,5 +1,12 @@
 # Typical Usage #
 
+## An easy way to check your connection to your GitLab server ##
+set up your .gltrc so it includes the server_ip, username and (optionally) password
+Then run
+`glt.py listProjects`
+This will connect to the server and list off all the projects.  
+You'll get an error if stuff isn't configured correctly
+
 ## Creating a class ##
 
 1. create on server

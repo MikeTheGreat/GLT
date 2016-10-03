@@ -45,6 +45,11 @@ def read_student_list_csv(input_file, mode):
         if line == "":
             continue
 
+        # If there's a trailing comma (but nothing after it)
+        # remove it
+        if line[-1] == ",":
+            line = line[:-1]
+
         words = line.split(',')
         first_name = words[0].replace(" ", "").strip()
         last_name = words[1].replace(" ", "").strip()
@@ -52,7 +57,7 @@ def read_student_list_csv(input_file, mode):
             email = words[2].replace(" ", "").strip()
         else:
             email = ""
-        if len(words) > 3:
+        if len(words) > 3 and words[3]:
             glid = int(words[3].replace(" ", "").strip())
         else:
             glid = -1

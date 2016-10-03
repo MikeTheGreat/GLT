@@ -15,6 +15,9 @@ from glt.PrintUtils import get_logger
 logger = get_logger(__name__)
 
 def run_command_capture_output(cmd, redirect_stderr_to_stdout = False):
+    """Runs the given <cmd>, returns a string of
+    string stdout, string stderr, int return code
+    if <redirect_stderr_to_stdout> is True then stderr will be empty"""
     if redirect_stderr_to_stdout:
         stderr_is = subprocess.STDOUT
     else:
@@ -269,9 +272,9 @@ class commit_feedback_collector:
                                 logger.debug( "found a match at " + local_dir )
                                 untracked.append( local_dir )
 
-            print_list(path_to_repo, modified_staged, Fore.CYAN, "modified, staged files:")
-            print_list(path_to_repo, modified_not_staged, Fore.YELLOW, "modified, unstaged files:")
-            print_list(path_to_repo, untracked, Fore.RED, "untracked files:")
+            #print_list(path_to_repo, modified_staged, Fore.CYAN, "modified, staged files:")
+            #print_list(path_to_repo, modified_not_staged, Fore.YELLOW, "modified, unstaged files:")
+            #print_list(path_to_repo, untracked, Fore.RED, "untracked files:")
             if modified_staged:
                 need_commit = True
             else:

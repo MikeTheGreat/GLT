@@ -1,4 +1,9 @@
 * NEXT STEPS:
+** downloadHomework needs some work
+*** print the section and homework(s) that it's attempting to download
+*** freshen anything that's already there: log is separately from new downloads?
+*** Log existing, unfreshened dirs?
+** NEED: tutorial for setting up the student side of things
 ** create users: there's an 'external' option for accounts: 
 *** "External users cannot see internal or private projects unless access is explicitly granted. Also, external users cannot create projects or groups."
 ** gradeList - add 'all' option?

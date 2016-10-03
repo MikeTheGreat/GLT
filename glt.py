@@ -9,8 +9,8 @@ import subprocess
 #init()
 
 from glt.MainUtils import main
-from glt.PrintUtils import get_logger
-logger = get_logger(__name__)
+#from glt.PrintUtils import get_logger
+#logger = get_logger(__name__)
 
 
 if __name__ == '__main__':

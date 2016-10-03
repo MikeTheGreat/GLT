@@ -5,10 +5,17 @@
 ; GLT will prefix server_ip with "http://" to access the web api
 ; and will use it itself to clone via ssh
 ;server_ip=gitlab1.westus.cloudapp.azure.com/
-server_ip=192.168.56.101
 
+; next is the VirtualBox VM
+;server_ip=192.168.56.101
+;username=root
+;password=mikemike ; this can (and should) be specified on the command line
+
+; Azure account:
+server_ip=ccc-git-lab-server.westus.cloudapp.azure.com
 username=root
-password=mikemike ; this can (and should) be specified on the command line
+password=An0therPassw0rd!
+
 
 ; data_dir stores data files, one for each section
 ; The files themselves are given a name that includes the section

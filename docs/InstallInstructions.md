@@ -83,6 +83,18 @@ Once you've sent a bunch of emails without problem then they give you the total 
 4. Instructions for [configuring GitLab to use SMTP are here](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/settings/smtp.md).  
    Instructions for how to get your SMPT info from SendGrid [are here](https://sendgrid.com/docs/Integrate/index.html)
    http://stackoverflow.com/a/28369344/250610
+Just in case this moves, here are the settings for SendGrid (as of 9/30/2016):
+<gitlab_rails['smtp_enable'] = true
+gitlab_rails['smtp_address'] = "smtp.sendgrid.net"
+gitlab_rails['smtp_port'] = 587
+gitlab_rails['smtp_user_name'] = "a_sendgrid_crendential"
+gitlab_rails['smtp_password'] = "a_sendgrid_password"
+gitlab_rails['smtp_domain'] = "smtp.sendgrid.net"
+gitlab_rails['smtp_authentication'] = "login"
+gitlab_rails['smtp_enable_starttls_auto'] = true
+gitlab_rails['smtp_tls'] = false>
+
+
 5. Don't forget to do the `sudo gitlab-ctl reconfigure` and `sudo gitlab-ctl restart` once you've editted /etc/gitlab/gitlab.rb
 
 

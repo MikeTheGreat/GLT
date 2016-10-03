@@ -45,10 +45,8 @@ def create_student_accounts(glc, student_list):
             'email': student.email, 'projects_limit':20, \
             'can_create_group':False, 'username': student.get_user_name(), \
             'password':'PASSWORD'}
-        #print(user_data)
+        #logger.info(user_data)
 
-        # There doesn't appear to be an easy way to look up an account based on
-        # username, etc.
         # If the user's account already we'll get an error here:
         try:
             user = glc.users.create(user_data)

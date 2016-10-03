@@ -16,7 +16,7 @@ from glt.MyClasses.StudentCollection import StudentCollection
 from glt.Parsers.ParserCSV import read_student_list_csv, CsvMode
 from glt.Constants import EnvOptions
 from glt.PrintUtils import print_color, print_error
-from glt.GitLocalUtils import call_shell, git_clone_repo
+from glt.GitLocalUtils import call_shell, git_clone_repo, run_command_capture_output
 
 from glt.PrintUtils import get_logger
 logger = get_logger(__name__)
@@ -266,7 +266,9 @@ class CourseInfo(object):
                " to download")
             exit()
 
+        new_student_projects = list()
         updated_student_projects = list()
+        unchanged_student_projects = list()
 
         # After this, one of three things is true:
         #   1) hw_to_download is a list of all the homework project
@@ -348,12 +350,33 @@ class CourseInfo(object):
                             logger.debug( "Found an existing repo at " + git_dir )
                             cwd_prev = os.getcwd()
                             os.chdir(root)
-            
+
+                            # in order to know if the pull actually
+                            # changes anything we'll need to compare
+                            # the SHA ID's of the HEAD commit before & after
+                            sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
+                                , False)
+                            sha_pre_pull = sz_std_out.strip().split()[0].strip()
+
                             # Update the repo
                             call_shell("git pull")
 
+                            sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
+                                , False)
+                            sha_post_pull = sz_std_out.strip().split()[0].strip()
+
                             os.chdir(cwd_prev)
-                        
+
+                            hw_info = StudentHomeworkUpdateDesc(student, \
+                                                student_dest_dir, project, \
+                                                datetime.datetime.now())                        
+
+                            if sha_pre_pull == sha_post_pull:
+                                unchanged_student_projects.append( hw_info )
+                            else:
+                                updated_student_projects.append( hw_info )
+
+                            # remember that we've updated it:
                             repo_exists = True
                         if repo_exists: break
                     if repo_exists: break
@@ -368,13 +391,13 @@ class CourseInfo(object):
                 project, student_dest_dir)
 
             # add the repo into the list of updated projects
-            updated_student_projects.append( \
+            new_student_projects.append( \
                 StudentHomeworkUpdateDesc(student, \
                           student_dest_dir, project, \
                           datetime.datetime.now()) )
 
         # return the list of updated projects
-        return updated_student_projects
+        return new_student_projects, updated_student_projects, unchanged_student_projects
 
     def git_do_core(self, root_dir, git_cmds):
         """Searches for git repos in & under <root_dir>, and then

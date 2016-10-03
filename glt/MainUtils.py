@@ -414,8 +414,6 @@ def main():
          
     elif env[EnvOptions.ACTION] == EnvOptions.CREATE_STUDENTS:
 
-        print "\nAttempting to create student accounts for " + env[EnvOptions.SECTION] + "\n"
-
         require_env_option(env, EnvOptions.SECTION, \
             "You need to specify a section (course -e.g., bit142)"\
                " to create all the student accounts!")
@@ -423,6 +421,8 @@ def main():
         require_variable(course_info, \
             "Could not find the data file for this section " \
             "(expected to find it at " + get_data_file_path(env) + ")" )
+
+        print "\nAttempting to create student accounts for " + env[EnvOptions.SECTION] + "\n"
 
         # load_environment already loaded up the known_good_accounts
         # next we need to load in the student list from the .CSV/.HTML/etc:
@@ -528,19 +528,25 @@ def main():
 
         glc = connect_to_gitlab(env)
 
-        updated_projects = course_info.download_homework(glc, env)
+        new_student_projects, \
+            updated_student_projects, \
+            unchanged_student_projects = \
+            course_info.download_homework(glc, env)
 
-        if not updated_projects:
-            print "No projects have been updated/downloaded"
-        else:
-            print_color( Fore.GREEN, "Updated the following projects:" )
-            print "(In the base directory of " + \
-                env[EnvOptions.STUDENT_WORK_DIR] + ")\n"
-            for proj in updated_projects:
-                print "\t" + proj.student_dest_dir \
-                    .replace(env[EnvOptions.STUDENT_WORK_DIR], "")
+        dir_list = [proj.student_dest_dir for proj in new_student_projects]
+        print_list(env[EnvOptions.STUDENT_WORK_DIR], dir_list,\
+            Fore.RED, "The following projects are newly downloaded:", \
+            "No new projects have been downloaded")
 
-            print "\n" + "="*20 + "\n"
+        dir_list = [proj.student_dest_dir for proj in updated_student_projects]
+        print_list(env[EnvOptions.STUDENT_WORK_DIR], dir_list,\
+            Fore.YELLOW, "Updated the following projects:", \
+            "None of the existing projects have been updated")
+
+        dir_list = [proj.student_dest_dir for proj in unchanged_student_projects]
+        print_list(env[EnvOptions.STUDENT_WORK_DIR], dir_list,\
+            Fore.GREEN, "The following projects existed previously, and have not changed:", \
+            "There are no existing, unchanged projects")
 
         exit()
 
@@ -605,7 +611,7 @@ def main():
             section_list = [course_info.section]
 
         for sect in section_list:
-            # go find the information specific to this 
+            # go find the information specific to this course
 
             course_env = rcfile.rcfile("glt", module_name=sect)
             course_env = rcfile.merge(course_env, env)
