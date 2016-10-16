@@ -1,4 +1,8 @@
 * NEXT STEPS:
+** Verify GitLab setup
+*** Student projects don't allow pull requests, etc
+*** Starter project's "forks" link (left column) does NOT list other students' proejcts?
+**** Or else they're inaccessible?
 ** downloadHomework needs some work
 *** print the section and homework(s) that it's attempting to download
 *** freshen anything that's already there: log is separately from new downloads?
@@ -121,12 +125,14 @@ https://www.borngeek.com/2015/02/27/setting-the-time-zone-in-gitlab/
 	Pre-configured VMs: https://about.gitlab.com/2016/07/13/how-to-setup-a-gitlab-instance-on-microsoft-azure/?utm_medium=email&utm_source=marketo&utm_campaign=release+newsletter&utm_content=july+22+2016&mkt_tok=eyJpIjoiTnpBM01EY3lOekkzWW1NMiIsInQiOiJiR2pZNmk1MCtZOVYrTjVpN2xISTBaeUZEaXczSnI3VFZqVUxkM1hPVUlUSFhHVHl6TnpXSVlxYUZPYzN0OU12OXpHeGtwS3FIaTdKeHZLd2QxXC9UZEcrT08xcHVOQ2dpREM3MVNpNlNKSDQ9In0%3D
 
 ** How to distribute?
-	pip package? app/executable?
-		https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/	
-		https://packaging.python.org/en/latest/	
-		https://pip.pypa.io/en/latest/reference/
-		https://pypi.python.org/pypi/pip/
-	Ansible/Chef recipe?
+*** pip package? app/executable?
+		 https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/	
+		 https://packaging.python.org/en/latest/	
+		 https://pip.pypa.io/en/latest/reference/
+		 https://pypi.python.org/pypi/pip/
+*** Ansible/Chef recipe?
+*** PyInstaller?
+    http://www.pyinstaller.org/
  
 ** Create a forum for people to ask questions about GLT?
 
