@@ -144,13 +144,8 @@ def renumber_current_tag(target_tag):
                     highest_suffix = int(suffix)
     
         new_prior_tag =  target_tag+ str( highest_suffix+1)
-    
-        p=subprocess.Popen(["git","show", sha_tag],\
-            stderr=subprocess.PIPE,\
-            stdout=subprocess.PIPE)
-    
-        sha_actual_commit, dt_tag = extract_commit_datetime(p)
-        p.terminate()
+      
+        sha_actual_commit, dt_tag = extract_commit_datetime(sha_tag)
     
         # rename the current commit to be the tag with the number
         # after it:
@@ -394,61 +389,50 @@ class commit_feedback_collector:
 def print_dir():
     print "print_dir called in " + os.getcwd()
 
-def extract_commit_datetime(p):
+def extract_commit_datetime(tagOrCommit):
     """Given a Git stdout message for a tag or commit, extract
     the SHA-1 ID for the commit and the date of the underlying commit"""
-    state = 1 # looking for the commit
-    # get output from process "Something to print"
 
-    # Did git report a fatal error?
-    output = p.stderr.readline() # returns empty string if no error
-    loc = output.lower().find("fatal")
-    if loc != -1:
-        logger.error( "Fatal error - found 'fatal' in tag/commit message" )
-        logger.debug( "tag/commit message:\n" + output )
-        return None, None
+    # ~0 asks for the 0th last commit (i.e., this one)
+    #   for tags it'll get past the tag and talk about the commit itself
+    #   for 'head' it'll no-op
+    rgCmdLine = ["git","show", "-s", "--format=\"%H %cI\"", tagOrCommit+"~0"]
 
-    output = p.stdout.readline()
+    # if things go ok then there will be no output on stderr, and any
+    # readline()'s would block.
+    # instead, check the first line for the word 'fatal' to detect error
+    p=subprocess.Popen(rgCmdLine,\
+                stderr=subprocess.STDOUT,\
+                stdout=subprocess.PIPE)
+    try:
+        # Did git report a fatal error?
+        output = p.stdout.readline().strip()
+        loc = output.lower().find("fatal")
+        if loc != -1:
+            logger.error( "Fatal error - found 'fatal' in tag/commit message" )
+            logger.debug( "tag/commit message:\n" + output )
+            return None, None
 
-    while output:
-        logger.debug("LINE:" + output.strip() )
-    
-        if state == 1: # looking for the commit
-            loc = output.lower().find("commit")
-            if loc != -1:
-                loc = len("commit") + loc + 1 #+1 for blank space
-                SHA_commit = output[loc:].strip()
-                logger.debug( 'Found commit, SHA-1=' + SHA_commit )
-                state = 2 # looking for the date of the commit
-        if state == 2: # looking for the date of the commit
-            loc = output.lower().find("date:")
-            if loc != -1:
-                loc = len("date:") + loc + 1
-                date_str = output[loc:].strip()
-    
-                # Lop off the 'Wed' at the start:
-                loc = date_str.find(' ')
-                date_str = date_str[loc:].strip()
-    
-                # Lop off the '-0700' at the end:
-                loc = date_str.rfind(' ')
-                date_str = date_str[:loc].strip()
-    
-                logger.debug('Found date for commit:' + date_str)
-                # Thu Sep 15 22:18:40 2016 -0700
-                dt = datetime.datetime.strptime(date_str, "%b %d %H:%M:%S %Y")
-    
-                state = 3 # done!
-        if state == 3: # done!
-            # print "Finished!"
-            return SHA_commit, dt
-    
-        output = p.stdout.readline()
+        # otherwise we're expecting <SHA-1> <date>
+        loc = output.find(" ")
 
-    # We should exit the loop via state 3
-    # If we don't then we didn't find one or more of the things
-    # we were looking for then send back nothing
-    return None, None
+        SHA_commit = output[:loc]
+        logger.debug( 'Found commit, SHA-1=' + SHA_commit )
+
+        # The remainder is the time, minus the '-0700'/'+0800' at the end:
+        date_str = output[loc+1:-7].strip()
+    
+        logger.debug('Found date for commit:' + date_str)
+        # Thu Sep 15 22:18:40 2016 -0700
+        #dt = datetime.datetime.strptime(date_str, "%b %d %H:%M:%S %Y")
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+        logger.debug('Resulting date object::' + str(dt) )
+        # We should exit the loop via state 3
+        # If we don't then we didn't find one or more of the things
+        # we were looking for then send back nothing
+        return SHA_commit, dt
+    finally:
+        p.terminate()
 
 class grade_list_collector(object):
     """A class to collect up the 'what needs to be graded' info 
@@ -461,25 +445,14 @@ class grade_list_collector(object):
 
     def generate_grading_list_collector(self, tag):
         def grading_list_collector():
-            p=subprocess.Popen(["git","show", tag],\
-                stderr=subprocess.PIPE,\
-                stdout=subprocess.PIPE)
-            # write 'a line\n' to the process
-            #p.stdin.write('a line\n')
 
-            sha_tag, dt_tag = extract_commit_datetime(p)
-            p.terminate()
+            sha_tag, dt_tag = extract_commit_datetime(tag)
             if sha_tag is None:
                 logger.debug( "This assignment hasn't been graded yet" )
                 self.ungraded.append(os.getcwd())
                 return True
 
-            p=subprocess.Popen(["git","show", "head"],\
-                stderr=subprocess.PIPE,\
-                stdout=subprocess.PIPE)
-
-            sha_head, dt_head = extract_commit_datetime(p)
-            p.terminate()
+            sha_head, dt_head = extract_commit_datetime("head")
 
             if sha_head == sha_tag:
                 logger.debug( "SHA's for commits matched\n\tGRADED MOST RECENT SUBMISSION" )
