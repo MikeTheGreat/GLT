@@ -98,16 +98,26 @@ def delete_accounts_in_class(glc, course_info):
 def list_projects(glc):
     """ List all the projects in the GitLabServer """
 
-    projects = glc.projects.all()
+    foundAny = False
+    whichPage = 0
 
-    if not projects: # if projects list is empty
-        print "No projects present"
-        return
+    projects = True
+    while projects:
+        print 'asking for page ' + str(whichPage)
+        projects = glc.projects.all(page=whichPage, per_page=5)
+        #projects = glc.projects.list(page=0, per_page=100)
 
-    print "Found the following projects:\n"
-    for project in projects:
-        print project.name_with_namespace + " ID: " + str(project.id)
+        if projects: foundAny = True
 
+        if not foundAny and not projects: # if projects list is empty
+            print "No projects present"
+            return
+
+        print "Found the following projects:\n"
+        for project in projects:
+            print project.name_with_namespace + " ID: " + str(project.id)
+
+        whichPage = whichPage + 1
     return
 
     print "Project Details:\n"

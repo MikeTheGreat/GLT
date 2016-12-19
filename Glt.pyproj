@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
-    <CommandLineArguments>-h</CommandLineArguments>
+    <CommandLineArguments>gradeList BIT142 PCE_10</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
     <Name>Glt</Name>
@@ -33,6 +33,8 @@
     <Content Include="docs\InstallInstructions.md" />
     <Content Include="LICENSE" />
     <Content Include="Misc\AzureStuff\GitLabServer_notes.txt" />
+    <Content Include="Misc\Data\BIT142.txt" />
+    <Content Include="Misc\Data\BIT142_2016_Fall_ORIG.txt" />
     <Content Include="Misc\Data\BIT142_VM.txt" />
     <Content Include="README.md" />
     <Content Include="SampleInputs\Git_Repos\A1\File.txt" />
@@ -47,7 +49,7 @@
     <Content Include="SampleInputs\HTML\Instructor Briefcase_files\waci105.html" />
     <Content Include="SampleInputs\HTML\Instructor Briefcase_files\waci106.html" />
     <Content Include="SampleInputs\HTML\Instructor Briefcase_files\waci110.html" />
-    <Content Include="SampleInputs\Text\StudentList_Short.csv" />
+    <Content Include="SampleInputs\2016_Fall\StudentList_ExtraCredit_1.csv" />
     <Content Include="SampleInputs\Text\StudentList_Singleton.csv" />
     <Content Include="TODO\TODO-glt.org" />
   </ItemGroup>
@@ -109,6 +111,7 @@
     <Folder Include="from_elsewhere\" />
     <Folder Include="SampleInputs\Git_Repos\" />
     <Folder Include="SampleInputs\Git_Repos\A1\" />
+    <Folder Include="SampleInputs\2016_Fall\" />
     <Folder Include="Tests\Batch_Files\" />
     <Folder Include="TODO\" />
     <Folder Include="Tests\" />

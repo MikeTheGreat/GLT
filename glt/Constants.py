@@ -2,6 +2,8 @@
 
 from enum import Enum
 
+INSTRUCTOR_FEEDBACK_TAG_MSG = "Tag left here so the instructor's scripts know when feedback was uploaded"
+
 class EnvOptions(str, Enum):
     """This lists the keys for the rcfile and command line arguments.
     Note that this is a 'mix-in' enum, which means that saying

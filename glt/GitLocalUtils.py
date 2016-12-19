@@ -22,7 +22,25 @@ def run_command_capture_output(cmd, redirect_stderr_to_stdout = False):
         stderr_is = subprocess.STDOUT
     else:
         stderr_is = subprocess.PIPE
-    p=subprocess.Popen(cmd.split(), # shell=True,\
+    cmd_exploded = cmd.split();
+    rgCmd = []
+    accumulator = ""
+    for part in cmd_exploded:
+        # If we're rebuilding a string parameter:
+        if part[0] == "\"":
+            accumulator = part
+            continue
+        if part[-1:] == "\"":
+            accumulator = accumulator + " " + part
+            rgCmd.append(accumulator)
+            accumulator = "" 
+            continue
+        if accumulator != "":
+            accumulator = accumulator + " " + part
+            continue
+        # otherwise, just put the next part on:
+        rgCmd.append(part)
+    p=subprocess.Popen(rgCmd, # shell=True,\
                 bufsize = 1,\
                 stderr=stderr_is,\
                 stdout=subprocess.PIPE,
@@ -137,7 +155,9 @@ def renumber_current_tag(target_tag):
         # rename the current commit to be the tag with the number
         # after it:
         git_cmd = "git tag -a -m INSTRUCTOR_FEEDBACK "+ \
-        new_prior_tag +  " " + sha_actual_commit
+            new_prior_tag +  " " + sha_actual_commit
+        print git_cmd
+        
         sz_stdout, sz_stderr, ret = run_command_capture_output( git_cmd )
     
         # remove existing tag:
@@ -385,6 +405,7 @@ def extract_commit_datetime(p):
     loc = output.lower().find("fatal")
     if loc != -1:
         logger.error( "Fatal error - found 'fatal' in tag/commit message" )
+        logger.debug( "tag/commit message:\n" + output )
         return None, None
 
     output = p.stdout.readline()
@@ -448,6 +469,10 @@ class grade_list_collector(object):
 
             sha_tag, dt_tag = extract_commit_datetime(p)
             p.terminate()
+            if sha_tag is None:
+                logger.debug( "This assignment hasn't been graded yet" )
+                self.ungraded.append(os.getcwd())
+                return True
 
             p=subprocess.Popen(["git","show", "head"],\
                 stderr=subprocess.PIPE,\
@@ -456,10 +481,7 @@ class grade_list_collector(object):
             sha_head, dt_head = extract_commit_datetime(p)
             p.terminate()
 
-            if sha_tag is None:
-                logger.debug( "This assignment hasn't been graded yet" )
-                self.ungraded.append(os.getcwd())
-            elif sha_head == sha_tag:
+            if sha_head == sha_tag:
                 logger.debug( "SHA's for commits matched\n\tGRADED MOST RECENT SUBMISSION" )
                 self.graded.append(os.getcwd())
             elif dt_tag < dt_head:

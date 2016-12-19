@@ -146,11 +146,11 @@ def parse_args():
 
     ################ GitDo ################
     git_do = subparsers.add_parser(EnvOptions.GIT_DO.value, \
-              help="Run a git command on every assignment (repo) in a directory"\
+              help="Run a shell command on every assignment (repo) in a directory"\
               "(Note the directory is specified by the "\
               + EnvOptions.STUDENT_WORK_DIR + \
               " variable in the .gltrc file)." \
-              "  Example: \"glt gitdo BIT142 Assign_1 status\" "\
+              "  Example: \"glt gitdo BIT142 Assign_1 git status\" "\
               "will run the 'git status' command on each repo in "\
               "BIT142's 'Assign_1' directory",
               parents=[common_parser])
@@ -439,7 +439,7 @@ def main():
                     student_list.students_no_errors.remove(existing_student)
                     student_list.students_with_errors.append(UserErrorDesc(\
                         existing_student, "Student's account is already"\
-                        " listed in the roster for the section's data file (" + \
+                        " listed in the roster for the section's data file \n\t( " + \
                         get_data_file_path(env)+")"))
 
         if not student_list.students_no_errors:

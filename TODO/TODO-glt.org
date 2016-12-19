@@ -1,9 +1,21 @@
+* Bugs
+** Why the f does 'download' not know when things are new?
+*** Because it's only comparing whether a 'pull' changes things.  Need to switch this to looking for the previous instructor commit message / tag
+*** GradeList is case-sensitive on the assignment (PCE_10 works, but pce_10 doesn't?) 
 * NEXT STEPS:
+** Create a 'walkthrough doc', with code examples to copy (instead of having this at the bottom of glt.py)
+** FEATURE: in .gltrc, define a pattern to indicate where to download .git dir (ex: <class>/<assign>/<username.last>, <username.first>, <assign>)
+** When downloading, print out dots to indicate that progress is being made
+*** Otherwise it just sits there for a while, then spews the summary
+** FEATURE: list all homeworks
+** FEATURE: list all students in a class
+** FEATURE: list all config options, and where they came from?
 ** Verify GitLab setup
 *** Student projects don't allow pull requests, etc
 *** Starter project's "forks" link (left column) does NOT list other students' proejcts?
 **** Or else they're inaccessible?
 ** downloadHomework needs some work
+*** When an assignment is not found, list all the ones that are present in the data file
 *** print the section and homework(s) that it's attempting to download
 *** freshen anything that's already there: log is separately from new downloads?
 *** Log existing, unfreshened dirs?
@@ -63,7 +75,13 @@ It looks like things should be fine AS LONG AS the instructor and student don't 
 http://stackoverflow.com/questions/32017020/grouping-argparse-subparser-arguments
 
 * Polish
-
+** Have download suggest commitFeedback, which suggests uploadFeedback
+** Would it be easier just to pass an array of command line parts to gitDo?  Instead of having git_do_core wrap multi-word args with quotes, and then have call_shell rebuild it?
+** Debugging advice?
+*** How to adjust the logging level
+*** Try it on the command line, then use gitdo
+** 'Verbose' mode for GitDo, download, etc, so that it's clear which repos we're working on?
+** NEED: GitDo needs to gracefully handle non-existent commands (e.g., missing .bat fil)
 ** Double check if any print_color(RED) should actually be print_error()
 
 ** grep for os.sep & replace with os.path.join
@@ -275,3 +293,14 @@ git push --porcelain
 git blame --porcelain
 git commit --porcelain
 git worktree list --porcelain
+* Research topic ideas
+** Possible paper
+*** Automates tedious, error-prone instructor work
+*** Previous work has verified that students get benefits from this
+**** Particularly valuable in CS1/CS2
+*** General approach: smaller claims are easier to verify
+*** current state: looking for people who want to use it
+*** TODO GLT Research paper deadlines: mid-to-late April for CCSC workshop; summer deadline for SIGCSE
+** Using metrics to impact student success?
+* Bugs
+** download doesn't grab BIT 142 new projects (like Garth's)?
