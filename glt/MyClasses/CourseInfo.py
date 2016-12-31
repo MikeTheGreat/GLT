@@ -7,6 +7,7 @@ import shutil
 import sys
 #import git
 import subprocess
+import tempfile
 import gitlab
 
 from colorama import Fore, Style, init # Back,
@@ -297,127 +298,161 @@ class CourseInfo(object):
         
         # First make sure that we can at least create the 'root'
         # directory for saving all the homework projects:
-        dest_dir = os.path.join(env[EnvOptions.STUDENT_WORK_DIR], \
-            env[EnvOptions.SECTION])
+        dest_dir = env[EnvOptions.STUDENT_WORK_DIR]
         if not os.path.isdir(dest_dir):
             os.makedirs(dest_dir) # throws an exception on fail
 
         # Next, go through all the projects and see which
         # (if any) were forked from the target project
         foundAny = False
-        whichPage = 0
+        whichPage = 1
+        cProject = 0
 
-        projects = True
-        while projects:
-            logger.debug("About to retrieve page " + str(whichPage) )
-            projects = glc.projects.all(page=whichPage, per_page=10)
-            whichPage = whichPage + 1
+        try:
+            # If we need to clone (download) any projects we'll put them
+            # in the temp_dir, then move the dir containing .git (and
+            # all subdirs) to the place where we want them to end up
+            temp_dir_root = tempfile.mkdtemp() # this is an absolute path
 
-            if projects: foundAny = True
+            projects = True
+            while projects:
+                logger.debug("About to retrieve page " + str(whichPage) )
+                projects = glc.projects.all(page=whichPage, per_page=10)
+                whichPage = whichPage + 1
 
-            if not foundAny and not projects: # if projects list is empty
-                print "There are no projects present on the GitLab server"
-                return
+                if projects: foundAny = True
 
-            logger.info( "Found the following projects:\n" )
-            for project in projects:
-                logger.info( project.name_with_namespace + " ID: " + str(project.id) )
+                if not foundAny and not projects: # if projects list is empty
+                    print "There are no projects present on the GitLab server"
+                    return
 
-                # For testing, to selectively download a single project:
-                #if project.id != 61:
-                #    continue
+                logger.info( "Found the following projects:\n" )
+                for project in projects:
+                    # For testing, to selectively download a single project:
+                    #if project.id != 61:
+                    #    continue
 
-                # See if the project matches any of the
-                # 1/many projects that we're trying to download
-                forked_project = None
-                if hasattr(project, 'forked_from_project'):
-                    for hw in hw_to_download:
-                        if project.forked_from_project['id'] == hw.id:
-                            forked_project = hw
-                            break
+                    logger.info( project.name_with_namespace + " ID: " + str(project.id) )
 
-                if forked_project is None:
-                    logger.debug( "\tNOT a forked project (or not forked from "\
-                        + env[EnvOptions.HOMEWORK_NAME] + ")\n" )
-                    continue
+                    # See if the project matches any of the
+                    # 1/many projects that we're trying to download
+                    forked_project = None
+                    if hasattr(project, 'forked_from_project'):
+                        for hw in hw_to_download:
+                            if project.forked_from_project['id'] == hw.id:
+                                forked_project = hw
+                                break
 
-                logger.info( "\tProject was forked from " + forked_project.name \
-                    + " (ID:"+str(forked_project.id)+")" )
+                    if forked_project is None:
+                        logger.debug( "\tNOT a forked project (or not forked from "\
+                            + env[EnvOptions.HOMEWORK_NAME] + ")\n" )
+                        continue
 
-                owner_name = project.path_with_namespace.split('/')[0]
-                student = Student(username=owner_name, id=project.owner.id)
+                    logger.info( "\tProject was forked from " + forked_project.name \
+                        + " (ID:"+str(forked_project.id)+")" )
 
-                sys.stdout.write( '.' )  # This will slowly update the screen, so the
-                # user doesn't just wait till we're all done :)
+                    owner_name = project.path_with_namespace.split('/')[0]
+                    student = Student(username=owner_name, id=project.owner.id)
 
-                # make a dir for this particular project
-                student_dest_dir = os.path.join(dest_dir, \
-                    forked_project.name, \
-                    student.get_dir_name()+","+forked_project.name+", FROM GIT")
-                if os.path.isdir(student_dest_dir):
-                    # if there's already a .git repo there then refresh (pull) it 
-                    # instead of cloning it
+                    sys.stdout.write( '.' )  # This will slowly update the screen, so the
+                    # user doesn't just wait till we're all done :)
 
-                    repo_exists = False
-                    for root, dirs, files in os.walk(student_dest_dir):
-                        for dir in dirs:
-                            if dir == '.git':
-                                git_dir = os.path.join( root, dir)
-                                logger.debug( "Found an existing repo at " + git_dir )
-                                cwd_prev = os.getcwd()
-                                os.chdir(root)
+                    # figure out the dir (path) for this project
+                    student_dest_dir = student.generate_hw_dir( env,  \
+                        forked_project.name)
 
-                                # in order to know if the pull actually
-                                # changes anything we'll need to compare
-                                # the SHA ID's of the HEAD commit before & after
-                                sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
-                                    , False)
-                                sha_pre_pull = sz_std_out.strip().split()[0].strip()
+                    #cProject = cProject + 1
+                    #if cProject == 4:
+                    #    return # exit early for testing purposes
 
-                                # Update the repo
-                                call_shell("git pull")
 
-                                sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
-                                    , False)
-                                sha_post_pull = sz_std_out.strip().split()[0].strip()
+                    if os.path.isdir(student_dest_dir):
+                        # if there's already a .git repo there then refresh (pull) it 
+                        # instead of cloning it
 
-                                os.chdir(cwd_prev)
+                        repo_exists = False
+                        for root, dirs, files in os.walk(student_dest_dir):
+                            for dir in dirs:
+                                if dir == '.git':
+                                    git_dir = os.path.join( root, dir)
+                                    logger.debug( "Found an existing repo at " + git_dir )
+                                    cwd_prev = os.getcwd()
+                                    os.chdir(root)
 
-                                hw_info = StudentHomeworkUpdateDesc(student, \
-                                                    student_dest_dir, project, \
-                                                    datetime.datetime.now())                        
+                                    # in order to know if the pull actually
+                                    # changes anything we'll need to compare
+                                    # the SHA ID's of the HEAD commit before & after
+                                    sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
+                                        , False)
+                                    sha_pre_pull = sz_std_out.strip().split()[0].strip()
 
-                                if sha_pre_pull == sha_post_pull:
-                                    unchanged_student_projects.append( hw_info )
-                                else:
-                                    updated_student_projects.append( hw_info )
+                                    # Update the repo
+                                    call_shell("git pull")
 
-                                # remember that we've updated it:
-                                repo_exists = True
+                                    sz_std_out, sz_std_err, ret_code = run_command_capture_output("git show-ref --head --heads HEAD"\
+                                        , False)
+                                    sha_post_pull = sz_std_out.strip().split()[0].strip()
+
+                                    os.chdir(cwd_prev)
+
+                                    hw_info = StudentHomeworkUpdateDesc(student, \
+                                                        student_dest_dir, project, \
+                                                        datetime.datetime.now())                        
+
+                                    if sha_pre_pull == sha_post_pull:
+                                        unchanged_student_projects.append( hw_info )
+                                    else:
+                                        updated_student_projects.append( hw_info )
+
+                                    # remember that we've updated it:
+                                    repo_exists = True
+                                if repo_exists: break
                             if repo_exists: break
-                        if repo_exists: break
 
-                    if repo_exists:
-                        continue # don't try to clone it again
-                else:
-                    # local copy doesn't exist (yet), so clone it
-                    os.makedirs(student_dest_dir)
+                        if repo_exists:
+                            continue # don't try to clone it again
+                    else:
+                        logger.debug("local copy doesn't exist (yet), so clone it")
 
-                    # clone the repo into the project
-                    # The ssh connection string should look like:
-                    #   git@ubuntu:root/bit142_assign_1.git
-                    git_clone_repo(env[EnvOptions.SERVER_IP_ADDR], \
-                        project, student_dest_dir)
+                        # clone the repo into the project
+                        # The ssh connection string should look like:
+                        #   git@ubuntu:root/bit142_assign_1.git
+                        temp_dir = os.path.join(temp_dir_root, "TEMP")
+                        os.makedirs(temp_dir)
 
-                    # add the repo into the list of updated projects
-                    new_student_projects.append( \
-                        StudentHomeworkUpdateDesc(student, \
-                                  student_dest_dir, project, \
-                                  datetime.datetime.now()) )
+                        git_clone_repo(env[EnvOptions.SERVER_IP_ADDR], \
+                            project, temp_dir)
 
-            # return the list of updated projects
-            sys.stdout.flush()
-        return new_student_projects, updated_student_projects, unchanged_student_projects
+                        # next, go find the .git dir:
+                        found_git_dir = False;
+                        for root, dirs, files in os.walk(temp_dir):
+                            for dir in dirs:
+                                if dir == '.git':
+                                    new_git_dir = root
+                                    logger.debug( "Found the git dir inside " + new_git_dir )
+                                    found_git_dir = True
+                                if found_git_dir: break
+                            if found_git_dir: break
+
+                        if not found_git_dir:
+                            raise Exception("Despite cloning new repo, couldn't find git dir!")
+
+                        shutil.copytree(new_git_dir, student_dest_dir)                        
+                        shutil.rmtree(temp_dir, onerror=rmtree_remove_readonly_files)                                              
+
+                        # add the repo into the list of updated projects
+                        new_student_projects.append( \
+                            StudentHomeworkUpdateDesc(student, \
+                                      student_dest_dir, project, \
+                                      datetime.datetime.now()) )
+
+                # return the list of updated projects
+                sys.stdout.flush()            
+        # make sure we actually get rid of our temp directory:
+        finally:
+            shutil.rmtree(temp_dir_root, onerror=rmtree_remove_readonly_files)
+
+            return new_student_projects, updated_student_projects, unchanged_student_projects
 
     def git_do_core(self, root_dir, git_cmds):
         """Searches for git repos in & under <root_dir>, and then

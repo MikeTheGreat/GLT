@@ -16,8 +16,39 @@ server_ip=ccc-git-lab-server.westus.cloudapp.azure.com
 username=root
 password=An0therPassw0rd!
 
+; Download format:
+; When GLT first clones a repo, it will download it into a temp
+; directory.  It will then find the directory that contains
+; the .git directory, and take that directory (and all subdirs)
+; and move it so that it's where you want it
+;
+; The 'root' directory for homework downloads is given by 
+; student_work_dir (and it's assumed that there will be one
+; per section, prolly).
+;
+; Placeholders that GLT will replace:
+;
+;	Placeholder			Example:
+;	SECTION_NAME		CompSci101 
+;	ASSIGNMENT			HW_1 (This is the repo's name on GitLab)
+;	NAME_LAST			Smith, for "Bob Smith"
+;	NAME_FIRST			Bob, for "Bob Smith"
+; 
+; Everything else will be transcribed literally
+; Example:
+; if student_work_dir is "C:\homeworks\CompSci_101", and 
+; student_homework_location is "ASSIGNMENT/NAME_LAST, NAME_FIRST/"
+; then Bob Smith's homework for "HW_1" will be placed into
+; C:\homeworks\CompSci_101\HW_1\Smith, Bob\<.git dir here>
+;
+; The default value is specified in Constants.py, and should be
+; SECTION/ASSIGNMENT/NAME_LAST, NAME_FIRST/
+; NOTE: Do NOT put quotes around the string, even if you've got spaces
+;	in your pattern
+student_homework_location=ASSIGNMENT/NAME_LAST, NAME_FIRST, (Via GitLab)/
 
-; data_dir stores data files, one for each section
+; GLT stores stores data files, one data file for each section,
+; in the directory identified by data_dir 
 ; The files themselves are given a name that includes the section
 data_dir=E:\Work\Tech_Research\Git\Misc\Data\
 
@@ -33,8 +64,9 @@ temp_dir=e:\Work\Tech_Research\Git\Temp\
 ; GLT will lower-case any arguments so you can type whatever you want
 ; on the command line
 
+student_work_dir=e:\Work\Student_Work\BIT_142_New\
+;student_work_dir=e:\Work\Student_Work\BIT_142_New\PCE10_Git
 ;student_work_dir=e:\Work\Tech_Research\Git\Misc\StudentDownloads
-student_work_dir=e:\Work\Student_Work\BIT_142_New\PCE10_Git
 ;student_work_dir=e:\Work\Student_Work\BIT_142_Graded\PCE10_Git
 ;student_work_dir=e:\Work\Student_Work\BIT_142_New\PCE10_Git_Exp
 

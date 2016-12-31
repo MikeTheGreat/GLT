@@ -236,6 +236,18 @@ def load_environment():
     if 'defaults' in env[EnvOptions.SECTION_LIST]:
         env[EnvOptions.SECTION_LIST].remove('defaults')
 
+
+    # Fix up the HW_LOC so that the slashes work for 
+    # whatever platform we're on:
+    if EnvOptions.HW_LOC not in env:
+        env[EnvOptions.HW_LOC] = EnvOptions.HW_LOC_DEFAULT
+
+    hw_loc = os.path.normpath(env[EnvOptions.HW_LOC])
+    # REMOVE the starting separator, otherwise os.path.join won't work
+    if hw_loc[0] == os.sep:
+        hw_loc = hw_loc[1:]
+    env[EnvOptions.HW_LOC] = hw_loc
+
     return env, parser, course_info
 
 def load_data_file(env, section):
@@ -509,6 +521,10 @@ def main():
         require_env_option(env, EnvOptions.HOMEWORK_NAME, \
             "You must specify the name of a homework assignment "\
             "(or 'all', to download all assignments for this class)")
+
+        require_env_option(env, EnvOptions.HW_LOC, \
+            "Missing \"student_homework_location\" pattern (and GLT didn't"\
+            "add it in because of a bug")
 
         if env[EnvOptions.HOMEWORK_NAME] == 'all':
             print "\nAttempting to download all homework assignments for " \

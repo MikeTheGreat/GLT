@@ -1,4 +1,6 @@
 """Contains a class definition for Student"""
+import os.path
+from glt.Constants import EnvOptions
 
 _NOTFOUND = object()
 
@@ -70,3 +72,26 @@ class Student(object):
             self.last_name + ", " + self.first_name"""
         return self.last_name + ", " + self.first_name
 
+    def generate_hw_dir(self, env, project_name):
+        """Get a directory name for a particular hw project, based
+        on the pattern in env[EnvOptions.HW_LOC]"""
+        if EnvOptions.HW_LOC not in env:
+            raise Exception("student.generate_hw_dir: EnvOptions.HW_LOC not present in env!")
+        
+        pattern = env[EnvOptions.HW_LOC]
+
+        pattern = pattern.replace('SECTION_NAME', env[EnvOptions.SECTION])
+        pattern = pattern.replace('ASSIGNMENT', project_name)
+        pattern = pattern.replace('NAME_LAST', self.last_name)
+        pattern = pattern.replace('NAME_FIRST',self.first_name)
+
+        base_path = env[EnvOptions.STUDENT_WORK_DIR]
+
+        #pattern = str(pattern)
+        #base_path = str(base_path)
+
+        student_dest_dir = os.path.join(base_path,
+            pattern)
+
+        return student_dest_dir
+    

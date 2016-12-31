@@ -37,7 +37,7 @@ def get_logger(name):
     logger.addHandler(handler)
     logger.setLevel(logging.CRITICAL)
     #logger.setLevel(logging.INFO)
-    #logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
     return logger
 logger = get_logger(__name__)
             

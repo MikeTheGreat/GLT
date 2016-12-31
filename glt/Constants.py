@@ -57,3 +57,6 @@ class EnvOptions(str, Enum):
     DATA_DIR = "data_dir"
     TEMP_DIR = "temp_dir"
     SECTION_LIST = 'section_list'
+
+    HW_LOC = 'student_homework_location'
+    HW_LOC_DEFAULT = "SECTION/ASSIGNMENT/NAME_LAST, NAME_FIRST/"
